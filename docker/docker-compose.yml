@@ -1,0 +1,15 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ai-review-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,https://*.vercel.app
+      - OLLAMA_KEEP_ALIVE=30m
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
