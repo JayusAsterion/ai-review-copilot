@@ -1,4 +1,4 @@
-import type { ReviewResult } from "@/types/review";
+import type { BugReportResult, ReviewResult } from "@/types/review";
 
 const severityLabel = {
   info: "Info",
@@ -61,5 +61,59 @@ export function reviewResultToMarkdown(result: ReviewResult): string {
     "## PR Comment",
     "",
     result.prComment,
+  ].join("\n");
+}
+
+function formatList(items: string[], fallback: string): string {
+  return items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : `- ${fallback}`;
+}
+
+function formatNumberedList(items: string[], fallback: string): string {
+  return items.length > 0
+    ? items.map((item, index) => `${index + 1}. ${item}`).join("\n")
+    : `1. ${fallback}`;
+}
+
+export function bugReportResultToMarkdown(result: BugReportResult): string {
+  return [
+    `# Bug: ${result.title}`,
+    "",
+    "## Summary",
+    result.summary,
+    "",
+    "## Environment",
+    `- Environment: ${result.environment || "Not provided"}`,
+    `- Module: ${result.module || "Not provided"}`,
+    "- URL: Not provided",
+    "- User Role: Not provided",
+    "- Browser: Not provided",
+    "- Device: Not provided",
+    "- Build: Not provided",
+    "",
+    "## Steps to Reproduce",
+    formatNumberedList(result.stepsToReproduce, "Steps were not provided."),
+    "",
+    "## Actual Result",
+    result.actualResult || "Not provided",
+    "",
+    "## Expected Result",
+    result.expectedResult || "Not provided",
+    "",
+    "## Severity / Priority",
+    `- Severity: ${result.severity}`,
+    `- Priority: ${result.priority}`,
+    `- Reproduction Rate: ${result.reproductionRate}`,
+    "",
+    "## Additional Observations",
+    formatList(result.additionalObservations, "No additional observations."),
+    "",
+    "## Suggested Test Cases",
+    formatList(result.suggestedTestCases, "No suggested test cases."),
+    "",
+    "## Missing Information",
+    formatList(result.missingInformation, "No missing information identified."),
+    "",
+    "## Developer Comment",
+    result.developerComment,
   ].join("\n");
 }

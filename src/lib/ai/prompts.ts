@@ -1,4 +1,4 @@
-import type { ReviewInput } from "@/types/review";
+import type { BugReportInput, ReviewInput } from "@/types/review";
 
 const modeLabels: Record<ReviewInput["mode"], string> = {
   "code-review": "Code Review",
@@ -64,7 +64,9 @@ Use this exact JSON shape:
 }
 
 Rules:
+- The diff may contain multiple files. Group findings by file when possible.
 - Do not invent files or line numbers.
+- If a finding applies to the whole PR instead of one file, set "file" to null.
 - When a finding refers to a changed line in the diff, set "line" to the best matching source line number or diff line number available.
 - Use null for "line" only when the finding is general or the evidence does not identify a specific line.
 - If evidence is missing, mark it as a recommendation instead of a confirmed bug.
@@ -72,4 +74,85 @@ Rules:
 - Include QA test cases when relevant.
 - Keep the PR comment professional and ready to paste into GitHub or Azure DevOps.
 - Focus on correctness risks, regressions, missing edge cases, test coverage, and user-visible behavior.`;
+}
+
+function formatOptionalField(label: string, value?: string): string {
+  return `- ${label}: ${value?.trim() || "Not provided"}`;
+}
+
+export function buildBugReportPrompt(input: BugReportInput): string {
+  const attachments =
+    input.attachments && input.attachments.length > 0
+      ? input.attachments
+          .map(
+            (attachment) =>
+              `- ${attachment.name} (${attachment.type || "unknown type"}, ${attachment.size} bytes)`
+          )
+          .join("\n")
+      : "No attachments provided.";
+
+  return `You are transforming QA notes into a professional bug report.
+
+Act as a senior QA engineer and technical bug report writer. Use only the facts provided. Do not invent steps, product behavior, environment details, screenshots, logs, or root causes. If important information is missing, include it in missingInformation.
+
+Context:
+${formatOptionalField("Application / Product", input.application)}
+${formatOptionalField("Module / Page", input.module)}
+${formatOptionalField("Environment", input.environment)}
+${formatOptionalField("URL", input.url)}
+${formatOptionalField("User Role", input.userRole)}
+${formatOptionalField("Browser", input.browser)}
+${formatOptionalField("Device", input.device)}
+${formatOptionalField("Build / Version", input.buildVersion)}
+${formatOptionalField("Reproduction Rate", input.reproductionRate)}
+
+QA Notes:
+${truncateContent(input.roughNotes?.trim() || "No rough QA notes provided.")}
+
+Steps to Reproduce:
+${truncateContent(input.stepsToReproduce?.trim() || "No steps provided.")}
+
+Actual Result:
+${truncateContent(input.actualResult?.trim() || "No actual result provided.")}
+
+Expected Result:
+${truncateContent(input.expectedResult?.trim() || "No expected result provided.")}
+
+Additional Context:
+${truncateContent(input.additionalContext?.trim() || "No additional context provided.")}
+
+Screenshot Notes:
+${truncateContent(input.screenshotNotes?.trim() || "No screenshot notes provided.")}
+
+Attachment Names:
+${attachments}
+
+Return only valid JSON. Do not include markdown fences, prose before JSON, or prose after JSON.
+
+Use this exact JSON shape:
+{
+  "title": "string",
+  "summary": "string",
+  "severity": "low | medium | high | critical",
+  "priority": "low | medium | high | urgent",
+  "reproductionRate": "always | sometimes | rarely | unknown",
+  "environment": "string",
+  "module": "string",
+  "stepsToReproduce": ["string"],
+  "actualResult": "string",
+  "expectedResult": "string",
+  "additionalObservations": ["string"],
+  "missingInformation": ["string"],
+  "suggestedTestCases": ["string"],
+  "developerComment": "string",
+  "markdown": "string"
+}
+
+Rules:
+- Suggest severity and priority from user impact and environment.
+- Treat production blockers, data loss, security exposure, and broken critical paths as high or critical.
+- Treat visual/UI polish issues as low or medium unless they block completion.
+- Generate practical regression test cases.
+- Make developerComment concise and ready to paste into Jira, Azure DevOps, or GitHub Issues.
+- The markdown field must include a complete bug report ready to paste into Jira, Azure DevOps, or GitHub Issues.`;
 }

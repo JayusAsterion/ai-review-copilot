@@ -10,10 +10,12 @@ type LineNumberedTextareaProps = Omit<
   "className"
 > & {
   className?: string;
+  containerClassName?: string;
 };
 
 export function LineNumberedTextarea({
   className,
+  containerClassName,
   value,
   placeholder,
   onScroll,
@@ -34,7 +36,12 @@ export function LineNumberedTextarea({
   }, [placeholder, value]);
 
   return (
-    <div className="grid min-h-72 grid-cols-[3.25rem_minmax(0,1fr)] overflow-hidden rounded-xl border border-white/10 bg-[#060a12]/80 shadow-inner shadow-black/40 ring-1 ring-white/[0.03]">
+    <div
+      className={cn(
+        "grid h-72 grid-cols-[3.25rem_minmax(0,1fr)] overflow-hidden rounded-xl border border-white/10 bg-[#060a12]/80 shadow-inner shadow-black/40 ring-1 ring-white/[0.03]",
+        containerClassName
+      )}
+    >
       <div
         ref={gutterRef}
         aria-hidden="true"
@@ -55,7 +62,7 @@ export function LineNumberedTextarea({
         }}
         spellCheck={false}
         className={cn(
-          "min-h-72 w-full resize-y border-0 bg-transparent px-4 py-3 font-mono text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus-visible:ring-0",
+          "h-full w-full resize-none overflow-y-auto border-0 bg-transparent px-4 py-3 font-mono text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus-visible:ring-0",
           className
         )}
         {...props}

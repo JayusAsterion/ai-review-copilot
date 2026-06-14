@@ -22,7 +22,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { reviewResultToMarkdown } from "@/lib/utils/markdown";
@@ -69,7 +68,7 @@ function LoadingState() {
           </div>
         </div>
       </div>
-      <div className="space-y-5 p-5">
+      <div className="space-y-5 p-5 sm:p-6">
         <Skeleton className="h-24 rounded-2xl bg-white/[0.06]" />
         <div className="grid gap-3 sm:grid-cols-2">
           <Skeleton className="h-28 rounded-2xl bg-white/[0.06]" />
@@ -124,7 +123,7 @@ export function ReviewResultPanel({
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, delay: 0.1 }}
-        className="flex min-h-[620px] items-center justify-center rounded-3xl border border-white/10 bg-card/70 px-6 py-10 text-center shadow-2xl shadow-black/25 backdrop-blur-xl"
+        className="flex min-h-[420px] items-center justify-center rounded-3xl border border-white/10 bg-card/70 px-6 py-10 text-center shadow-2xl shadow-black/25 backdrop-blur-xl"
       >
         <div className="max-w-md">
           <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl bg-cyan-300/10 text-cyan-200 ring-1 ring-cyan-300/20">
@@ -160,7 +159,7 @@ export function ReviewResultPanel({
       transition={{ duration: 0.35 }}
       className="overflow-hidden rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/25 backdrop-blur-xl"
     >
-      <div className="space-y-4 border-b border-white/10 bg-white/[0.035] px-4 py-4 sm:px-5">
+      <div className="space-y-4 border-b border-white/10 bg-white/[0.035] px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-base font-semibold text-white">
@@ -200,151 +199,151 @@ export function ReviewResultPanel({
         </div>
       </div>
 
-      <ScrollArea className="h-[calc(100vh-14rem)] min-h-[620px]">
-        <div className="space-y-6 px-4 py-5 sm:px-5">
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white">Findings</h3>
-            {result.findings.length > 0 ? (
-              <div className="space-y-3">
-                {result.findings.map((finding, index) => (
-                  <Card
-                    key={`${finding.title}-${index}`}
-                    className="rounded-2xl border-white/10 bg-black/20"
-                  >
-                    <CardHeader>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                          <CardTitle className="text-slate-100">
-                            {finding.title}
-                          </CardTitle>
-                          <CardDescription className="text-slate-500">
-                            {[finding.type, finding.file]
-                              .filter(Boolean)
-                              .join(" - ")}
-                          </CardDescription>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                          <Badge
-                            className={
-                              finding.line
-                                ? "border-cyan-300/20 bg-cyan-300/10 font-mono text-cyan-100"
-                                : "border-slate-300/15 bg-slate-300/10 text-slate-300"
-                            }
-                          >
-                            {finding.line ? `Line ${finding.line}` : "Line not specified"}
-                          </Badge>
-                          <Badge
-                            className={`capitalize ${severityClassName[finding.severity]}`}
-                          >
-                            {finding.severity}
-                          </Badge>
-                        </div>
+      <div className="space-y-7 px-4 py-5 sm:px-6 sm:py-6">
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-white">Findings</h3>
+          {result.findings.length > 0 ? (
+            <div className="space-y-3">
+              {result.findings.map((finding, index) => (
+                <Card
+                  key={`${finding.title}-${index}`}
+                  className="rounded-2xl border-white/10 bg-black/20"
+                >
+                  <CardHeader>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <CardTitle className="text-slate-100">
+                          {finding.title}
+                        </CardTitle>
+                        <CardDescription className="text-slate-500">
+                          {[finding.type, finding.file]
+                            .filter(Boolean)
+                            .join(" - ")}
+                        </CardDescription>
                       </div>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <p className="text-sm leading-6 text-slate-400">
-                        {finding.description}
-                      </p>
-                      <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
-                        <p className="text-xs font-medium uppercase text-slate-500">
-                          Suggested fix
-                        </p>
-                        <p className="mt-1 text-sm leading-6 text-slate-200">
-                          {finding.suggestedFix}
-                        </p>
+                      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                        <Badge
+                          className={
+                            finding.line
+                              ? "border-cyan-300/20 bg-cyan-300/10 font-mono text-cyan-100"
+                              : "border-slate-300/15 bg-slate-300/10 text-slate-300"
+                          }
+                        >
+                          {finding.line
+                            ? `Line ${finding.line}`
+                            : "Line not specified"}
+                        </Badge>
+                        <Badge
+                          className={`capitalize ${severityClassName[finding.severity]}`}
+                        >
+                          {finding.severity}
+                        </Badge>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : (
-              <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-400">
-                No findings were detected.
-              </div>
-            )}
-          </div>
-
-          <Separator />
-
-          <div className="space-y-3">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
-              <Sparkles className="size-4 text-cyan-200" />
-              Suggested Test Cases
-            </h3>
-            {result.testCases.length > 0 ? (
-              <ul className="space-y-2">
-                {result.testCases.map((testCase, index) => (
-                  <li
-                    key={`${testCase}-${index}`}
-                    className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-300"
-                  >
-                    {testCase}
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-slate-400">
-                No additional test cases suggested.
-              </p>
-            )}
-          </div>
-
-          <Separator />
-
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold text-white">PR Comment</h3>
-            <div className="overflow-hidden rounded-2xl border border-white/10 bg-black/20 p-4">
-              <ReactMarkdown
-                remarkPlugins={[remarkGfm]}
-                components={{
-                  p: ({ children }) => (
-                    <p className="mb-3 break-words text-sm leading-6 text-slate-300 last:mb-0">
-                      {children}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <p className="text-sm leading-6 text-slate-400">
+                      {finding.description}
                     </p>
-                  ),
-                  ul: ({ children }) => (
-                    <ul className="mb-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
-                      {children}
-                    </ul>
-                  ),
-                  ol: ({ children }) => (
-                    <ol className="mb-3 list-decimal space-y-1 pl-5 text-sm text-slate-300">
-                      {children}
-                    </ol>
-                  ),
-                  code: ({ children }) => (
-                    <code className="break-words rounded bg-muted px-1 py-0.5 font-mono text-xs">
-                      {children}
-                    </code>
-                  ),
-                  pre: ({ children }) => (
-                    <pre className="mb-3 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
-                      {children}
-                    </pre>
-                  ),
-                  h1: ({ children }) => (
-                    <h1 className="mb-2 text-lg font-semibold text-white">
-                      {children}
-                    </h1>
-                  ),
-                  h2: ({ children }) => (
-                    <h2 className="mb-2 text-base font-semibold text-white">
-                      {children}
-                    </h2>
-                  ),
-                  h3: ({ children }) => (
-                    <h3 className="mb-2 text-sm font-semibold text-white">
-                      {children}
-                    </h3>
-                  ),
-                }}
-              >
-                {result.prComment}
-              </ReactMarkdown>
+                    <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                      <p className="text-xs font-medium uppercase text-slate-500">
+                        Suggested fix
+                      </p>
+                      <p className="mt-1 text-sm leading-6 text-slate-200">
+                        {finding.suggestedFix}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
+          ) : (
+            <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-400">
+              No findings were detected.
+            </div>
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+            <Sparkles className="size-4 text-cyan-200" />
+            Suggested Test Cases
+          </h3>
+          {result.testCases.length > 0 ? (
+            <ul className="space-y-2">
+              {result.testCases.map((testCase, index) => (
+                <li
+                  key={`${testCase}-${index}`}
+                  className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-300"
+                >
+                  {testCase}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-400">
+              No additional test cases suggested.
+            </p>
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-white">PR Comment</h3>
+          <div className="max-h-96 overflow-y-auto rounded-2xl border border-white/10 bg-black/20 p-4">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                p: ({ children }) => (
+                  <p className="mb-3 break-words text-sm leading-6 text-slate-300 last:mb-0">
+                    {children}
+                  </p>
+                ),
+                ul: ({ children }) => (
+                  <ul className="mb-3 list-disc space-y-1 pl-5 text-sm text-slate-300">
+                    {children}
+                  </ul>
+                ),
+                ol: ({ children }) => (
+                  <ol className="mb-3 list-decimal space-y-1 pl-5 text-sm text-slate-300">
+                    {children}
+                  </ol>
+                ),
+                code: ({ children }) => (
+                  <code className="break-words rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                    {children}
+                  </code>
+                ),
+                pre: ({ children }) => (
+                  <pre className="mb-3 overflow-x-auto rounded-lg bg-muted p-3 text-xs">
+                    {children}
+                  </pre>
+                ),
+                h1: ({ children }) => (
+                  <h1 className="mb-2 text-lg font-semibold text-white">
+                    {children}
+                  </h1>
+                ),
+                h2: ({ children }) => (
+                  <h2 className="mb-2 text-base font-semibold text-white">
+                    {children}
+                  </h2>
+                ),
+                h3: ({ children }) => (
+                  <h3 className="mb-2 text-sm font-semibold text-white">
+                    {children}
+                  </h3>
+                ),
+              }}
+            >
+              {result.prComment}
+            </ReactMarkdown>
           </div>
         </div>
-      </ScrollArea>
+      </div>
     </motion.section>
   );
 }

@@ -15,6 +15,30 @@ export type UploadedReviewFile = {
   content: string;
 };
 
+export type ReviewFileVersion = "old" | "new";
+
+export type ReviewSourceFile = {
+  id: string;
+  name: string;
+  path: string;
+  language: string;
+  size: number;
+  content: string;
+  version: ReviewFileVersion;
+};
+
+export type GeneratedFileDiff = {
+  id: string;
+  filePath: string;
+  language: string;
+  oldFile?: ReviewSourceFile;
+  newFile?: ReviewSourceFile;
+  status: "modified" | "added" | "deleted" | "unmatched";
+  diff: string;
+  additions: number;
+  deletions: number;
+};
+
 export type ReviewInput = {
   mode: ReviewMode;
   provider: ReviewProvider;
@@ -59,4 +83,55 @@ export type OllamaModel = {
 export type OllamaSettings = {
   baseUrl: string;
   model: string;
+};
+
+export type BugSeverity = "low" | "medium" | "high" | "critical";
+
+export type BugPriority = "low" | "medium" | "high" | "urgent";
+
+export type ReproductionRate = "always" | "sometimes" | "rarely" | "unknown";
+
+export type BugReportAttachment = {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  previewUrl?: string;
+};
+
+export type BugReportInput = {
+  application?: string;
+  module?: string;
+  environment?: string;
+  url?: string;
+  userRole?: string;
+  browser?: string;
+  device?: string;
+  buildVersion?: string;
+  reproductionRate?: ReproductionRate;
+  roughNotes?: string;
+  stepsToReproduce?: string;
+  actualResult?: string;
+  expectedResult?: string;
+  additionalContext?: string;
+  screenshotNotes?: string;
+  attachments?: BugReportAttachment[];
+};
+
+export type BugReportResult = {
+  title: string;
+  summary: string;
+  severity: BugSeverity;
+  priority: BugPriority;
+  reproductionRate: ReproductionRate;
+  environment?: string;
+  module?: string;
+  stepsToReproduce: string[];
+  actualResult: string;
+  expectedResult: string;
+  additionalObservations: string[];
+  missingInformation: string[];
+  suggestedTestCases: string[];
+  developerComment: string;
+  markdown: string;
 };

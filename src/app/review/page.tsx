@@ -19,7 +19,7 @@ export default function ReviewPage() {
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.035)_1px,transparent_1px)] bg-[size:44px_44px] [mask-image:linear-gradient(to_bottom,black,transparent_80%)]" />
       </div>
 
-      <div className="mx-auto flex min-h-screen max-w-[1500px] flex-col px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-4 sm:px-6 lg:px-8">
         <nav className="mb-6 flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
           <div className="flex min-w-0 items-center gap-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-cyan-400/15 text-cyan-200 ring-1 ring-cyan-300/25">
@@ -43,7 +43,7 @@ export default function ReviewPage() {
           </div>
         </nav>
 
-        <header className="mb-7 grid gap-5 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+        <header className="mb-8 space-y-6">
           <div className="space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-xs font-medium text-cyan-100 shadow-lg shadow-cyan-950/20">
               <Sparkles className="size-3.5" />
@@ -59,7 +59,7 @@ export default function ReviewPage() {
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-2 rounded-2xl border border-white/10 bg-white/[0.04] p-2 backdrop-blur-xl sm:min-w-[420px]">
+          <div className="grid max-w-3xl grid-cols-1 gap-2 rounded-2xl border border-white/10 bg-white/[0.04] p-2 backdrop-blur-xl sm:grid-cols-3">
             {[
               ["Modes", "4"],
               ["Provider", "Local"],

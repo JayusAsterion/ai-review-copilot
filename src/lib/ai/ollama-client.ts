@@ -1,7 +1,13 @@
-import { buildCodeReviewPrompt } from "@/lib/ai/prompts";
+import { buildBugReportPrompt, buildCodeReviewPrompt } from "@/lib/ai/prompts";
+import { bugReportResultToMarkdown } from "@/lib/utils/markdown";
 import type {
+  BugPriority,
+  BugReportInput,
+  BugReportResult,
+  BugSeverity,
   OllamaModel,
   OllamaSettings,
+  ReproductionRate,
   ReviewFinding,
   ReviewInput,
   ReviewResult,
@@ -134,14 +140,100 @@ function normalizeReviewResult(value: unknown, fallbackComment: string): ReviewR
   };
 }
 
-function parseModelJson(content: string): ReviewResult {
+function extractJsonObject(content: string): unknown {
   const trimmed = content.trim();
   const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
   const jsonText = fencedMatch?.[1] ?? trimmed;
   const objectMatch = jsonText.match(/\{[\s\S]*\}/);
-  const parsed = JSON.parse(objectMatch?.[0] ?? jsonText);
 
-  return normalizeReviewResult(parsed, content);
+  return JSON.parse(objectMatch?.[0] ?? jsonText);
+}
+
+function parseModelJson(content: string): ReviewResult {
+  return normalizeReviewResult(extractJsonObject(content), content);
+}
+
+function normalizeSeverity(value: unknown): BugSeverity {
+  return value === "low" ||
+    value === "medium" ||
+    value === "high" ||
+    value === "critical"
+    ? value
+    : "medium";
+}
+
+function normalizePriority(value: unknown): BugPriority {
+  return value === "low" ||
+    value === "medium" ||
+    value === "high" ||
+    value === "urgent"
+    ? value
+    : "medium";
+}
+
+function normalizeReproductionRate(value: unknown): ReproductionRate {
+  return value === "always" ||
+    value === "sometimes" ||
+    value === "rarely" ||
+    value === "unknown"
+    ? value
+    : "unknown";
+}
+
+function normalizeStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
+function normalizeBugReportResult(
+  value: unknown,
+  fallbackComment: string
+): BugReportResult {
+  if (!value || typeof value !== "object") {
+    throw new Error("The model response was not a JSON object.");
+  }
+
+  const record = value as Partial<BugReportResult>;
+  const result: BugReportResult = {
+    title: typeof record.title === "string" ? record.title : "Bug report",
+    summary:
+      typeof record.summary === "string"
+        ? record.summary
+        : "Ollama returned a bug report result.",
+    severity: normalizeSeverity(record.severity),
+    priority: normalizePriority(record.priority),
+    reproductionRate: normalizeReproductionRate(record.reproductionRate),
+    environment:
+      typeof record.environment === "string" ? record.environment : undefined,
+    module: typeof record.module === "string" ? record.module : undefined,
+    stepsToReproduce: normalizeStringArray(record.stepsToReproduce),
+    actualResult:
+      typeof record.actualResult === "string"
+        ? record.actualResult
+        : "Not provided.",
+    expectedResult:
+      typeof record.expectedResult === "string"
+        ? record.expectedResult
+        : "Not provided.",
+    additionalObservations: normalizeStringArray(record.additionalObservations),
+    missingInformation: normalizeStringArray(record.missingInformation),
+    suggestedTestCases: normalizeStringArray(record.suggestedTestCases),
+    developerComment:
+      typeof record.developerComment === "string"
+        ? record.developerComment
+        : fallbackComment,
+    markdown: typeof record.markdown === "string" ? record.markdown : "",
+  };
+
+  return {
+    ...result,
+    markdown: result.markdown || bugReportResultToMarkdown(result),
+  };
+}
+
+function parseBugReportJson(content: string): BugReportResult {
+  return normalizeBugReportResult(extractJsonObject(content), content);
 }
 
 export async function testOllamaConnection(
@@ -273,6 +365,115 @@ export async function runOllamaCodeReview(
           "Manually verify the areas mentioned in the generated PR comment.",
         ],
         prComment: content,
+      };
+    }
+  } catch (error) {
+    throw new Error(getReadableError(error));
+  }
+}
+
+export async function runOllamaBugReport(
+  input: BugReportInput,
+  settings: OllamaSettings
+): Promise<BugReportResult> {
+  const model = settings.model.trim();
+
+  if (!model) {
+    throw new Error("Choose an Ollama model before generating a bug report.");
+  }
+
+  try {
+    const response = await fetch(getOllamaEndpoint(settings.baseUrl, "api/chat"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        stream: false,
+        format: "json",
+        options: {
+          temperature: 0.2,
+          num_predict: 1600,
+        },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a senior QA engineer and technical bug report assistant. You write concise, actionable, developer-ready bug reports.",
+          },
+          {
+            role: "user",
+            content: buildBugReportPrompt(input),
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const details = await readErrorBody(response);
+      const notFound =
+        response.status === 404 ||
+        details.toLowerCase().includes("not found") ||
+        details.toLowerCase().includes("pull model");
+
+      if (notFound) {
+        throw new Error(
+          `Model not found: ${model}. Pull it with: docker exec -it ai-review-ollama ollama pull ${model}`
+        );
+      }
+
+      throw new Error(
+        details
+          ? `Ollama responded with ${response.status}: ${details}`
+          : `Ollama responded with ${response.status} ${response.statusText}.`
+      );
+    }
+
+    const data = (await response.json()) as OllamaChatResponse;
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const content = data.message?.content ?? data.response ?? "";
+
+    if (!content.trim()) {
+      throw new Error("Ollama returned an empty response.");
+    }
+
+    try {
+      return parseBugReportJson(content);
+    } catch {
+      const fallback: BugReportResult = {
+        title: "Bug report generated by Ollama",
+        summary:
+          "Ollama generated a response, but it could not be parsed into the structured bug report schema.",
+        severity: "medium",
+        priority: "medium",
+        reproductionRate: input.reproductionRate ?? "unknown",
+        environment: input.environment,
+        module: input.module,
+        stepsToReproduce: [],
+        actualResult: input.actualResult || "Not provided.",
+        expectedResult: input.expectedResult || "Not provided.",
+        additionalObservations: [
+          "The raw model response is included in the developer comment.",
+        ],
+        missingInformation: ["Structured JSON response from the model"],
+        suggestedTestCases: [
+          "Manually verify the workflow described in the model response.",
+        ],
+        developerComment: content,
+        markdown: "",
+      };
+
+      return {
+        ...fallback,
+        markdown: bugReportResultToMarkdown({
+          ...fallback,
+          markdown: content,
+        }),
       };
     }
   } catch (error) {
