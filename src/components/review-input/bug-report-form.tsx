@@ -148,10 +148,10 @@ export function BugReportForm({
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.05 }}
-      className="overflow-hidden rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/25 backdrop-blur-xl"
+      transition={{ duration: 0.22, delay: 0.03, ease: [0.23, 1, 0.32, 1] }}
+      className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground"
     >
-      <div className="border-b border-white/10 bg-white/[0.035] px-4 py-4 sm:px-6">
+      <div className="border-b border-white/10 bg-black/15 px-4 py-4 sm:px-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <h2 className="flex items-center gap-2 text-base font-semibold text-white">

@@ -74,8 +74,14 @@ const providerOptions: Array<{
   },
 ];
 
-export function ReviewWorkspace() {
-  const [mode, setMode] = useState<ReviewMode>("code-review");
+type ReviewWorkspaceProps = {
+  initialMode?: Extract<ReviewMode, "code-review" | "bug-report">;
+};
+
+export function ReviewWorkspace({
+  initialMode = "code-review",
+}: ReviewWorkspaceProps) {
+  const [mode, setMode] = useState<ReviewMode>(initialMode);
   const [provider, setProvider] = useState<ReviewProvider>("ollama");
   const [ollamaSettings, setOllamaSettings] = useState<OllamaSettings>({
     baseUrl:
@@ -92,30 +98,26 @@ export function ReviewWorkspace() {
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: "easeOut" }}
-      className="flex flex-1 flex-col gap-8 pb-10"
+      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+      className="flex flex-1 flex-col gap-6 pb-10"
     >
-      <section className="overflow-hidden rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/25 backdrop-blur-xl">
-        <div className="border-b border-white/10 bg-white/[0.035] px-4 py-4 sm:px-6">
-          <div className="space-y-1">
-            <h2 className="text-base font-semibold text-white">
-              Workflow and provider
-            </h2>
-            <p className="text-sm leading-6 text-slate-400">
-              Choose the workflow, then decide whether to use local Ollama or
-              fast static generation.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-6 px-4 py-5 sm:px-6 sm:py-6">
+      <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground">
+        <div className="grid gap-5 px-4 py-5 sm:px-5 lg:grid-cols-[1fr_1.1fr]">
           <div className="space-y-3">
-            <Label className="text-slate-200">Workflow</Label>
+            <div className="space-y-1">
+              <h2 className="text-sm font-semibold text-white">
+                Workflow
+              </h2>
+              <p className="max-w-xl text-sm leading-6 text-slate-400">
+                Choose the module, then decide whether to run local Ollama or a
+                static analysis pass.
+              </p>
+            </div>
             <Tabs
               value={mode}
               onValueChange={(value) => setMode(value as ReviewMode)}
             >
-              <TabsList className="grid h-auto w-full grid-cols-2 border border-white/10 bg-black/30 p-1 sm:grid-cols-4">
+              <TabsList className="grid h-auto w-full grid-cols-2 border border-white/10 bg-black/25 p-1 xl:grid-cols-4">
                 {modeOptions.map((option) => {
                   const Icon = option.icon;
 
@@ -141,7 +143,7 @@ export function ReviewWorkspace() {
           </div>
 
           <div className="space-y-3">
-            <Label className="text-slate-200">Provider</Label>
+            <Label className="text-slate-200">AI provider</Label>
             <div className="grid gap-2 sm:grid-cols-3">
               {providerOptions.map((option) => {
                 const Icon = option.icon;
@@ -154,11 +156,11 @@ export function ReviewWorkspace() {
                     disabled={option.disabled}
                     onClick={() => setProvider(option.value)}
                     className={[
-                      "rounded-xl border p-3 text-left transition-all",
-                      "hover:-translate-y-0.5 hover:border-cyan-300/25 hover:bg-white/[0.06]",
+                      "rounded-xl border p-3 text-left transition-[border-color,background-color,transform]",
+                      "hover:border-cyan-300/25 hover:bg-white/[0.06] active:scale-[0.99]",
                       "disabled:cursor-not-allowed disabled:opacity-60",
                       isSelected
-                        ? "border-cyan-300/35 bg-cyan-300/10 shadow-lg shadow-cyan-950/20"
+                        ? "border-cyan-300/35 bg-cyan-300/10"
                         : "border-white/10 bg-black/20",
                     ].join(" ")}
                   >
@@ -183,10 +185,12 @@ export function ReviewWorkspace() {
           </div>
 
           {provider === "ollama" ? (
+            <div className="lg:col-span-2">
             <OllamaSettingsCard
               settings={ollamaSettings}
               onChange={setOllamaSettings}
             />
+            </div>
           ) : null}
         </div>
       </section>
@@ -211,6 +215,7 @@ export function ReviewWorkspace() {
           <ReviewResultPanel
             result={codeReviewResult}
             isLoading={isAnalyzing}
+            onClear={() => setCodeReviewResult(null)}
           />
         </>
       )}

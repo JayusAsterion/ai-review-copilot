@@ -19,7 +19,7 @@ export function GuideToc({ sections }: GuideTocProps) {
 
   return (
     <aside className="lg:sticky lg:top-6 lg:self-start">
-      <div className="rounded-3xl border border-white/10 bg-white/[0.04] p-3 shadow-2xl shadow-black/20 backdrop-blur-xl">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
         <div className="mb-3 flex items-center gap-2 px-2 pt-1 text-sm font-semibold text-white">
           <BookOpen className="size-4 text-cyan-200" />
           Contents

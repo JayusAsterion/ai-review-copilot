@@ -5,6 +5,7 @@ import {
   Download,
   FileSearch,
   Loader2,
+  RotateCcw,
   ShieldAlert,
   Sparkles,
 } from "lucide-react";
@@ -30,6 +31,7 @@ import type { ReviewFinding, ReviewResult } from "@/types/review";
 type ReviewResultPanelProps = {
   result: ReviewResult | null;
   isLoading?: boolean;
+  onClear?: () => void;
 };
 
 const severityClassName: Record<ReviewFinding["severity"], string> = {
@@ -52,7 +54,7 @@ function markdownFilename() {
 
 function LoadingState() {
   return (
-    <section className="rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/25 backdrop-blur-xl">
+    <section className="rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground">
       <div className="border-b border-white/10 px-4 py-4 sm:px-5">
         <div className="flex items-center gap-3">
           <div className="flex size-10 items-center justify-center rounded-xl bg-cyan-300/10 text-cyan-200 ring-1 ring-cyan-300/20">
@@ -83,6 +85,7 @@ function LoadingState() {
 export function ReviewResultPanel({
   result,
   isLoading = false,
+  onClear,
 }: ReviewResultPanelProps) {
   const markdown = result ? reviewResultToMarkdown(result) : "";
 
@@ -113,6 +116,22 @@ export function ReviewResultPanel({
     toast.success("Markdown exported");
   };
 
+  const copyFinding = async (finding: ReviewFinding) => {
+    const text = [
+      `**${finding.title}**`,
+      finding.file ? `File: \`${finding.file}\`` : null,
+      finding.line ? `Line: ${finding.line}` : null,
+      `Severity: ${finding.severity}`,
+      finding.description,
+      `Suggested fix: ${finding.suggestedFix}`,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
+
+    await navigator.clipboard.writeText(text);
+    toast.success("PR comment copied");
+  };
+
   if (isLoading) {
     return <LoadingState />;
   }
@@ -122,8 +141,8 @@ export function ReviewResultPanel({
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.1 }}
-        className="flex min-h-[420px] items-center justify-center rounded-3xl border border-white/10 bg-card/70 px-6 py-10 text-center shadow-2xl shadow-black/25 backdrop-blur-xl"
+      transition={{ duration: 0.22, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}
+      className="flex min-h-[420px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-10 text-center"
       >
         <div className="max-w-md">
           <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl bg-cyan-300/10 text-cyan-200 ring-1 ring-cyan-300/20">
@@ -156,10 +175,10 @@ export function ReviewResultPanel({
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="overflow-hidden rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/25 backdrop-blur-xl"
+      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+      className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground"
     >
-      <div className="space-y-4 border-b border-white/10 bg-white/[0.035] px-4 py-4 sm:px-6">
+      <div className="space-y-4 border-b border-white/10 bg-black/15 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-base font-semibold text-white">
@@ -196,6 +215,17 @@ export function ReviewResultPanel({
             <Download />
             Export Markdown
           </Button>
+          {onClear ? (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClear}
+              className="border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08]"
+            >
+              <RotateCcw />
+              Clear Review
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -253,6 +283,16 @@ export function ReviewResultPanel({
                         {finding.suggestedFix}
                       </p>
                     </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyFinding(finding)}
+                      className="border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08]"
+                    >
+                      <Clipboard />
+                      Copy PR comment
+                    </Button>
                   </CardContent>
                 </Card>
               ))}

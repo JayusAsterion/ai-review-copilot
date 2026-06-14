@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { AppShell } from "@/components/app-shell";
 import { GuideLayout } from "@/components/user-guide/guide-layout";
 import { userGuideSections } from "@/data/user-guide";
 
@@ -10,5 +11,12 @@ export const metadata: Metadata = {
 };
 
 export default function GuidePage() {
-  return <GuideLayout sections={userGuideSections} />;
+  return (
+    <AppShell
+      title="User Guide"
+      description="Install, configure, and operate the local-first review workflow."
+    >
+      <GuideLayout sections={userGuideSections} />
+    </AppShell>
+  );
 }

@@ -111,8 +111,8 @@ export function BugReportResultPanel({ result }: BugReportResultPanelProps) {
       <motion.section
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, delay: 0.1 }}
-        className="flex min-h-[420px] items-center justify-center rounded-3xl border border-white/10 bg-card/70 px-6 py-10 text-center shadow-2xl shadow-black/25 backdrop-blur-xl"
+        transition={{ duration: 0.22, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}
+        className="flex min-h-[420px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-10 text-center"
       >
         <div className="max-w-md">
           <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl bg-amber-300/10 text-amber-200 ring-1 ring-amber-300/20">
@@ -147,10 +147,10 @@ export function BugReportResultPanel({ result }: BugReportResultPanelProps) {
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35 }}
-      className="overflow-hidden rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/25 backdrop-blur-xl"
+      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
+      className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground"
     >
-      <div className="space-y-4 border-b border-white/10 bg-white/[0.035] px-4 py-4 sm:px-6">
+      <div className="space-y-4 border-b border-white/10 bg-black/15 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h2 className="flex items-center gap-2 text-base font-semibold text-white">

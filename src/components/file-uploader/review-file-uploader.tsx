@@ -82,7 +82,7 @@ export function ReviewFileUploader({
       <div
         {...getRootProps()}
         className={cn(
-          "flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-3xl border border-dashed border-white/12 bg-black/20 px-4 py-7 text-center transition-all",
+          "flex min-h-36 cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-white/12 bg-black/20 px-4 py-7 text-center transition-[border-color,background-color,transform]",
           "hover:-translate-y-0.5 hover:border-cyan-300/30 hover:bg-white/[0.05]",
           isDragActive && "border-cyan-300/50 bg-cyan-300/10"
         )}

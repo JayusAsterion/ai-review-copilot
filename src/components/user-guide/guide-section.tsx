@@ -23,7 +23,7 @@ export function GuideSection({ section, nested = false }: GuideSectionProps) {
     <section
       id={section.id}
       className={cn(
-        "scroll-mt-6 rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/20 backdrop-blur-xl",
+        "scroll-mt-6 rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground",
         nested
           ? "rounded-2xl bg-black/20 p-4 shadow-none sm:p-5"
           : "p-5 sm:p-6"

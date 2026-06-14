@@ -4,6 +4,8 @@ import {
   FileCode2,
   GitCompareArrows,
   Loader2,
+  ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
   TextCursorInput,
 } from "lucide-react";
@@ -42,6 +44,20 @@ type CodeReviewFormProps = {
 };
 
 type DiffSource = "manual" | "files" | "text";
+type OutputStyle = "pr-comments" | "summary" | "detailed";
+type ReviewDepth = "quick" | "standard" | "deep";
+
+const focusOptions = ["Bugs", "Security", "Performance", "Readability", "Testing"];
+const outputStyles: Array<{ value: OutputStyle; label: string }> = [
+  { value: "pr-comments", label: "PR comments" },
+  { value: "summary", label: "Summary" },
+  { value: "detailed", label: "Detailed review" },
+];
+const reviewDepths: Array<{ value: ReviewDepth; label: string }> = [
+  { value: "quick", label: "Quick" },
+  { value: "standard", label: "Standard" },
+  { value: "deep", label: "Deep" },
+];
 
 const sampleDiffPlaceholder = `diff --git a/src/components/button.tsx b/src/components/button.tsx
 --- a/src/components/button.tsx
@@ -67,6 +83,13 @@ export function CodeReviewForm({
   const [generatedFilesDiff, setGeneratedFilesDiff] = useState("");
   const [generatedTextDiff, setGeneratedTextDiff] = useState("");
   const [diffSource, setDiffSource] = useState<DiffSource>("manual");
+  const [selectedFocus, setSelectedFocus] = useState<string[]>([
+    "Bugs",
+    "Security",
+    "Testing",
+  ]);
+  const [outputStyle, setOutputStyle] = useState<OutputStyle>("pr-comments");
+  const [reviewDepth, setReviewDepth] = useState<ReviewDepth>("standard");
   const [sampleTextSeed, setSampleTextSeed] = useState(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
@@ -78,6 +101,14 @@ export function CodeReviewForm({
         : generatedTextDiff;
   const hasReviewInput =
     context.trim().length > 0 || activeDiff.trim().length > 0;
+
+  const toggleFocus = (focus: string) => {
+    setSelectedFocus((current) =>
+      current.includes(focus)
+        ? current.filter((item) => item !== focus)
+        : [...current, focus]
+    );
+  };
 
   const loadSampleReview = () => {
     setContext(sampleReviewContext);
@@ -99,10 +130,16 @@ export function CodeReviewForm({
       return;
     }
 
+    const settingsContext = [
+      `Review focus: ${selectedFocus.length > 0 ? selectedFocus.join(", ") : "General"}.`,
+      `Output style: ${outputStyles.find((style) => style.value === outputStyle)?.label}.`,
+      `Review depth: ${reviewDepths.find((depth) => depth.value === reviewDepth)?.label}.`,
+    ].join("\n");
+
     const input: ReviewInput = {
       mode: "code-review",
       provider,
-      context,
+      context: [context.trim(), settingsContext].filter(Boolean).join("\n\n"),
       diff: activeDiff,
       files: [],
     };
@@ -141,14 +178,14 @@ export function CodeReviewForm({
     <motion.section
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: 0.05 }}
-      className="overflow-hidden rounded-3xl border border-white/10 bg-card/70 text-card-foreground shadow-2xl shadow-black/25 backdrop-blur-xl"
+      transition={{ duration: 0.22, delay: 0.03, ease: [0.23, 1, 0.32, 1] }}
+      className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground"
     >
-      <div className="border-b border-white/10 bg-white/[0.035] px-4 py-4 sm:px-5">
+      <div className="border-b border-white/10 bg-black/15 px-4 py-4 sm:px-5">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-base font-semibold text-white">
-              Input and configuration
+              Source input
             </h2>
             <p className="text-sm leading-6 text-slate-400">
               Add context, paste a diff, or generate one from files before
@@ -172,7 +209,7 @@ export function CodeReviewForm({
               variant="outline"
               size="sm"
               onClick={loadSampleReview}
-            className="rounded-xl border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08]"
+              className="rounded-xl border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08]"
             >
               <Sparkles />
               Load sample review
@@ -213,7 +250,7 @@ export function CodeReviewForm({
               type="button"
               onClick={() => setDiffSource("manual")}
               className={[
-                "flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all",
+                "flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow]",
                 diffSource === "manual"
                   ? "bg-white/10 text-white shadow-lg shadow-black/15"
                   : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-100",
@@ -231,7 +268,7 @@ export function CodeReviewForm({
               type="button"
               onClick={() => setDiffSource("files")}
               className={[
-                "flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all",
+                "flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow]",
                 diffSource === "files"
                   ? "bg-white/10 text-white shadow-lg shadow-black/15"
                   : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-100",
@@ -249,7 +286,7 @@ export function CodeReviewForm({
               type="button"
               onClick={() => setDiffSource("text")}
               className={[
-                "flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-all",
+                "flex min-h-12 items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-medium transition-[background-color,color,box-shadow]",
                 diffSource === "text"
                   ? "bg-white/10 text-white shadow-lg shadow-black/15"
                   : "text-slate-400 hover:bg-white/[0.06] hover:text-slate-100",
@@ -304,6 +341,90 @@ export function CodeReviewForm({
           </div>
         </div>
 
+        <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="space-y-1">
+              <h3 className="flex items-center gap-2 text-sm font-semibold text-white">
+                <SlidersHorizontal className="size-4 text-cyan-200" />
+                Review settings
+              </h3>
+              <p className="max-w-xl text-xs leading-5 text-slate-500">
+                These settings are added to the review context so local Ollama
+                can shape the output without changing provider logic.
+              </p>
+            </div>
+
+            <div className="grid flex-1 gap-4 xl:grid-cols-[1.2fr_0.9fr_0.8fr]">
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400">Focus</Label>
+                <div className="flex flex-wrap gap-2">
+                  {focusOptions.map((focus) => {
+                    const selected = selectedFocus.includes(focus);
+
+                    return (
+                      <button
+                        key={focus}
+                        type="button"
+                        onClick={() => toggleFocus(focus)}
+                        className={[
+                          "rounded-full border px-3 py-1.5 text-xs font-medium transition active:scale-[0.98]",
+                          selected
+                            ? "border-cyan-300/30 bg-cyan-300/10 text-cyan-100"
+                            : "border-white/10 bg-white/[0.03] text-slate-400 hover:text-slate-200",
+                        ].join(" ")}
+                      >
+                        {focus}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400">Output style</Label>
+                <div className="grid gap-1 rounded-xl border border-white/10 bg-black/25 p-1">
+                  {outputStyles.map((style) => (
+                    <button
+                      key={style.value}
+                      type="button"
+                      onClick={() => setOutputStyle(style.value)}
+                      className={[
+                        "rounded-lg px-2 py-1.5 text-left text-xs font-medium transition",
+                        outputStyle === style.value
+                          ? "bg-white/10 text-white"
+                          : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-200",
+                      ].join(" ")}
+                    >
+                      {style.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400">Depth</Label>
+                <div className="grid grid-cols-3 gap-1 rounded-xl border border-white/10 bg-black/25 p-1 xl:grid-cols-1">
+                  {reviewDepths.map((depth) => (
+                    <button
+                      key={depth.value}
+                      type="button"
+                      onClick={() => setReviewDepth(depth.value)}
+                      className={[
+                        "rounded-lg px-2 py-1.5 text-xs font-medium transition",
+                        reviewDepth === depth.value
+                          ? "bg-white/10 text-white"
+                          : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-200",
+                      ].join(" ")}
+                    >
+                      {depth.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-center justify-end border-t border-white/10 pt-4">
           <Button
             type="button"
@@ -312,8 +433,8 @@ export function CodeReviewForm({
             disabled={isAnalyzing}
             className="rounded-2xl bg-cyan-300 px-5 text-slate-950 shadow-lg shadow-cyan-950/30 hover:bg-cyan-200"
           >
-            {isAnalyzing ? <Loader2 className="animate-spin" /> : <Sparkles />}
-            {isAnalyzing ? "Analyzing" : "Analyze"}
+            {isAnalyzing ? <Loader2 className="animate-spin" /> : <ShieldCheck />}
+            {isAnalyzing ? "Review running" : "Run Review"}
           </Button>
         </div>
       </div>
