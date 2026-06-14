@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
-import { Bot, CheckCircle2, GitPullRequest, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { Bot, CheckCircle2, FileText, GitPullRequest, Sparkles } from "lucide-react";
 
 import { ReviewWorkspace } from "@/components/review-workspace";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata: Metadata = {
@@ -39,6 +41,17 @@ export default function ReviewPage() {
               <CheckCircle2 />
               Browser to Ollama
             </Badge>
+            <Button
+              asChild
+              variant="outline"
+              size="sm"
+              className="border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white"
+            >
+              <Link href="/guide">
+                <FileText className="size-3.5" />
+                User Guide
+              </Link>
+            </Button>
             <ThemeToggle />
           </div>
         </nav>
