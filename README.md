@@ -4,6 +4,14 @@ AI Review Copilot is a local-first AI copilot for code reviews, bug reports, QA 
 
 This project is currently in MVP development.
 
+## Demo
+
+Try the hosted review workflow:
+
+```text
+https://ai-review-copilot.vercel.app/review
+```
+
 ## Features
 
 - Code review from PR diffs
