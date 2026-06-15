@@ -3,7 +3,6 @@ export type ReviewProvider = "ollama" | "static" | "cloud";
 export type ReviewMode =
   | "code-review"
   | "bug-report"
-  | "pr-comment"
   | "test-cases";
 
 export type UploadedReviewFile = {
@@ -133,5 +132,46 @@ export type BugReportResult = {
   missingInformation: string[];
   suggestedTestCases: string[];
   developerComment: string;
+  markdown: string;
+};
+
+export type TestCasePriority = "low" | "medium" | "high" | "critical";
+
+export type TestCaseCoverageLevel = "basic" | "standard" | "comprehensive";
+
+export type TestCaseOutputFormat =
+  | "checklist"
+  | "detailed"
+  | "gherkin"
+  | "markdown-table";
+
+export type TestCaseInput = {
+  context: string;
+  instructions?: string;
+  testTypes: string[];
+  coverageLevel: TestCaseCoverageLevel;
+  outputFormat: TestCaseOutputFormat;
+  priority: TestCasePriority;
+};
+
+export type GeneratedTestCase = {
+  id: string;
+  title: string;
+  priority: TestCasePriority;
+  type: string;
+  preconditions: string[];
+  steps: string[];
+  expectedResult: string;
+  testData: string[];
+  notes: string;
+};
+
+export type TestCaseResult = {
+  summary: string;
+  coverageFocus: string[];
+  testCases: GeneratedTestCase[];
+  edgeCases: string[];
+  regressionRisks: string[];
+  automationCandidates: string[];
   markdown: string;
 };

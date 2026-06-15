@@ -1,9 +1,8 @@
-import type { BugReportInput, ReviewInput } from "@/types/review";
+import type { BugReportInput, ReviewInput, TestCaseInput } from "@/types/review";
 
 const modeLabels: Record<ReviewInput["mode"], string> = {
   "code-review": "Code Review",
   "bug-report": "Bug Report",
-  "pr-comment": "PR Comment",
   "test-cases": "Test Cases",
 };
 
@@ -155,4 +154,55 @@ Rules:
 - Generate practical regression test cases.
 - Make developerComment concise and ready to paste into Jira, Azure DevOps, or GitHub Issues.
 - The markdown field must include a complete bug report ready to paste into Jira, Azure DevOps, or GitHub Issues.`;
+}
+
+export function buildTestCasesPrompt(input: TestCaseInput): string {
+  return `You are generating structured QA test coverage from product, bug, code review, or PR context.
+
+Use only the provided facts. Do not invent product behavior, APIs, roles, or data beyond reasonable test placeholders. If context is unclear, call that out in notes.
+
+Configuration:
+- Test types: ${input.testTypes.join(", ") || "Functional"}
+- Coverage level: ${input.coverageLevel}
+- Output format: ${input.outputFormat}
+- Priority baseline: ${input.priority}
+
+Additional instructions:
+${input.instructions?.trim() || "No additional instructions provided."}
+
+Source context:
+${truncateContent(input.context.trim() || "No context provided.")}
+
+Return only valid JSON. Do not include markdown fences, prose before JSON, or prose after JSON.
+
+Use this exact JSON shape:
+{
+  "summary": "string",
+  "coverageFocus": ["string"],
+  "testCases": [
+    {
+      "id": "TC-001",
+      "title": "string",
+      "priority": "Low | Medium | High | Critical",
+      "type": "string",
+      "preconditions": ["string"],
+      "steps": ["string"],
+      "expectedResult": "string",
+      "testData": ["string"],
+      "notes": "string"
+    }
+  ],
+  "edgeCases": ["string"],
+  "regressionRisks": ["string"],
+  "automationCandidates": ["string"]
+}
+
+Rules:
+- Generate practical QA scenarios, not generic test advice.
+- Include positive, negative, edge, and regression coverage when relevant.
+- Keep each test case executable by a QA engineer.
+- Prefer precise expected results.
+- Mark unclear assumptions in notes.
+- Suggest automation candidates only when the scenario is stable and repeatable.
+- Match the requested output format in the content style, but always return the JSON schema above.`;
 }

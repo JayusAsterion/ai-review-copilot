@@ -1,16 +1,27 @@
-import { buildBugReportPrompt, buildCodeReviewPrompt } from "@/lib/ai/prompts";
-import { bugReportResultToMarkdown } from "@/lib/utils/markdown";
+import {
+  buildBugReportPrompt,
+  buildCodeReviewPrompt,
+  buildTestCasesPrompt,
+} from "@/lib/ai/prompts";
+import {
+  bugReportResultToMarkdown,
+  testCaseResultToMarkdown,
+} from "@/lib/utils/markdown";
 import type {
   BugPriority,
   BugReportInput,
   BugReportResult,
   BugSeverity,
+  GeneratedTestCase,
   OllamaModel,
   OllamaSettings,
   ReproductionRate,
   ReviewFinding,
   ReviewInput,
   ReviewResult,
+  TestCaseInput,
+  TestCasePriority,
+  TestCaseResult,
 } from "@/types/review";
 
 type OllamaTagsResponse = {
@@ -32,8 +43,12 @@ export function normalizeOllamaUrl(baseUrl: string): string {
 
 function getReadableError(error: unknown): string {
   if (error instanceof Error) {
+    if (error.name === "AbortError") {
+      return "Generation was cancelled.";
+    }
+
     if (error.message === "Failed to fetch") {
-      return "Unable to connect to Ollama. Make sure Ollama is running and OLLAMA_ORIGINS includes this app origin.";
+      return "Unable to connect to Ollama. Make sure Ollama is running locally, the selected model is installed, and OLLAMA_ORIGINS includes this app origin.";
     }
 
     return error.message;
@@ -234,6 +249,96 @@ function normalizeBugReportResult(
 
 function parseBugReportJson(content: string): BugReportResult {
   return normalizeBugReportResult(extractJsonObject(content), content);
+}
+
+function normalizeTestCasePriority(value: unknown): TestCasePriority {
+  const normalized = typeof value === "string" ? value.toLowerCase() : "";
+
+  return normalized === "low" ||
+    normalized === "medium" ||
+    normalized === "high" ||
+    normalized === "critical"
+    ? normalized
+    : "medium";
+}
+
+function normalizeTestData(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === "string");
+  }
+
+  return typeof value === "string" && value.trim() ? [value] : [];
+}
+
+function normalizeGeneratedTestCase(
+  value: unknown,
+  index: number
+): GeneratedTestCase {
+  const record =
+    value && typeof value === "object"
+      ? (value as Partial<GeneratedTestCase>)
+      : {};
+
+  return {
+    id:
+      typeof record.id === "string" && record.id.trim()
+        ? record.id
+        : `TC-${String(index + 1).padStart(3, "0")}`,
+    title:
+      typeof record.title === "string" && record.title.trim()
+        ? record.title
+        : "Generated test case",
+    priority: normalizeTestCasePriority(record.priority),
+    type:
+      typeof record.type === "string" && record.type.trim()
+        ? record.type
+        : "Functional",
+    preconditions: normalizeStringArray(record.preconditions),
+    steps: normalizeStringArray(record.steps),
+    expectedResult:
+      typeof record.expectedResult === "string" && record.expectedResult.trim()
+        ? record.expectedResult
+        : "Expected behavior is satisfied according to the supplied context.",
+    testData: normalizeTestData(record.testData),
+    notes: typeof record.notes === "string" ? record.notes : "",
+  };
+}
+
+function normalizeTestCaseResult(value: unknown): TestCaseResult {
+  if (!value || typeof value !== "object") {
+    throw new Error("The model response was not a JSON object.");
+  }
+
+  const record = value as Partial<TestCaseResult>;
+  const result: Omit<TestCaseResult, "markdown"> = {
+    summary:
+      typeof record.summary === "string" && record.summary.trim()
+        ? record.summary
+        : "Ollama returned generated QA coverage.",
+    coverageFocus: normalizeStringArray(record.coverageFocus),
+    testCases: Array.isArray(record.testCases)
+      ? record.testCases.map(normalizeGeneratedTestCase)
+      : [],
+    edgeCases: normalizeStringArray(record.edgeCases),
+    regressionRisks: normalizeStringArray(record.regressionRisks),
+    automationCandidates: normalizeStringArray(record.automationCandidates),
+  };
+
+  if (result.testCases.length === 0) {
+    throw new Error("The model response did not include test cases.");
+  }
+
+  return {
+    ...result,
+    markdown:
+      typeof record.markdown === "string" && record.markdown.trim()
+        ? record.markdown
+        : testCaseResultToMarkdown(result),
+  };
+}
+
+function parseTestCasesJson(content: string): TestCaseResult {
+  return normalizeTestCaseResult(extractJsonObject(content));
 }
 
 export async function testOllamaConnection(
@@ -475,6 +580,96 @@ export async function runOllamaBugReport(
           markdown: content,
         }),
       };
+    }
+  } catch (error) {
+    throw new Error(getReadableError(error));
+  }
+}
+
+export async function runOllamaTestCases(
+  input: TestCaseInput,
+  settings: OllamaSettings,
+  options?: { signal?: AbortSignal }
+): Promise<TestCaseResult> {
+  const model = settings.model.trim();
+
+  if (!model) {
+    throw new Error("Choose an Ollama model before generating test cases.");
+  }
+
+  try {
+    const response = await fetch(getOllamaEndpoint(settings.baseUrl, "api/chat"), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      signal: options?.signal,
+      body: JSON.stringify({
+        model,
+        stream: false,
+        format: "json",
+        options: {
+          temperature: 0.2,
+          num_predict: 2200,
+        },
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a senior QA engineer. Generate practical, executable QA test coverage. Return strict JSON only.",
+          },
+          {
+            role: "user",
+            content: buildTestCasesPrompt(input),
+          },
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      const details = await readErrorBody(response);
+      const notFound =
+        response.status === 404 ||
+        details.toLowerCase().includes("not found") ||
+        details.toLowerCase().includes("pull model");
+
+      if (notFound) {
+        throw new Error(
+          `Model not found: ${model}. Pull it with: docker exec -it ai-review-ollama ollama pull ${model}`
+        );
+      }
+
+      throw new Error(
+        details
+          ? `Ollama responded with ${response.status}: ${details}`
+          : `Ollama responded with ${response.status} ${response.statusText}.`
+      );
+    }
+
+    let data: OllamaChatResponse;
+
+    try {
+      data = (await response.json()) as OllamaChatResponse;
+    } catch {
+      throw new Error("Ollama returned an invalid API response.");
+    }
+
+    if (data.error) {
+      throw new Error(data.error);
+    }
+
+    const content = data.message?.content ?? data.response ?? "";
+
+    if (!content.trim()) {
+      throw new Error("Ollama returned an empty response.");
+    }
+
+    try {
+      return parseTestCasesJson(content);
+    } catch {
+      throw new Error(
+        "The model returned an invalid format. Try generating again or simplifying the input."
+      );
     }
   } catch (error) {
     throw new Error(getReadableError(error));

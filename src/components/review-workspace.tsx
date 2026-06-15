@@ -2,11 +2,7 @@
 
 import {
   Bot,
-  Bug,
   Cloud,
-  Code2,
-  FileCode2,
-  MessageSquareText,
   Sparkles,
 } from "lucide-react";
 import { motion } from "motion/react";
@@ -20,7 +16,6 @@ import { BugReportResultPanel } from "@/components/review-result/bug-report-resu
 import { ReviewResultPanel } from "@/components/review-result/review-result-panel";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type {
   BugReportResult,
   OllamaSettings,
@@ -28,23 +23,6 @@ import type {
   ReviewProvider,
   ReviewResult,
 } from "@/types/review";
-
-const modeOptions: Array<{
-  value: ReviewMode;
-  label: string;
-  icon: ComponentType<{ className?: string }>;
-  disabled?: boolean;
-}> = [
-  { value: "code-review", label: "Code Review", icon: Code2 },
-  { value: "bug-report", label: "Bug Report", icon: Bug },
-  {
-    value: "pr-comment",
-    label: "PR Comment",
-    icon: MessageSquareText,
-    disabled: true,
-  },
-  { value: "test-cases", label: "Test Cases", icon: FileCode2, disabled: true },
-];
 
 const providerOptions: Array<{
   value: ReviewProvider;
@@ -81,7 +59,7 @@ type ReviewWorkspaceProps = {
 export function ReviewWorkspace({
   initialMode = "code-review",
 }: ReviewWorkspaceProps) {
-  const [mode, setMode] = useState<ReviewMode>(initialMode);
+  const mode = initialMode;
   const [provider, setProvider] = useState<ReviewProvider>("ollama");
   const [ollamaSettings, setOllamaSettings] = useState<OllamaSettings>({
     baseUrl:
@@ -102,46 +80,7 @@ export function ReviewWorkspace({
       className="flex flex-1 flex-col gap-6 pb-10"
     >
       <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground">
-        <div className="grid gap-5 px-4 py-5 sm:px-5 lg:grid-cols-[1fr_1.1fr]">
-          <div className="space-y-3">
-            <div className="space-y-1">
-              <h2 className="text-sm font-semibold text-white">
-                Workflow
-              </h2>
-              <p className="max-w-xl text-sm leading-6 text-slate-400">
-                Choose the module, then decide whether to run local Ollama or a
-                static analysis pass.
-              </p>
-            </div>
-            <Tabs
-              value={mode}
-              onValueChange={(value) => setMode(value as ReviewMode)}
-            >
-              <TabsList className="grid h-auto w-full grid-cols-2 border border-white/10 bg-black/25 p-1 xl:grid-cols-4">
-                {modeOptions.map((option) => {
-                  const Icon = option.icon;
-
-                  return (
-                    <TabsTrigger
-                      key={option.value}
-                      value={option.value}
-                      disabled={option.disabled}
-                      className="min-h-9 rounded-lg data-active:bg-white/10 data-active:text-white"
-                    >
-                      <Icon className="size-3.5" />
-                      <span className="truncate">{option.label}</span>
-                      {option.disabled ? (
-                        <Badge className="ml-1 hidden bg-amber-300/10 text-amber-100 md:inline-flex">
-                          Soon
-                        </Badge>
-                      ) : null}
-                    </TabsTrigger>
-                  );
-                })}
-              </TabsList>
-            </Tabs>
-          </div>
-
+        <div className="grid gap-5 px-4 py-5 sm:px-5">
           <div className="space-y-3">
             <Label className="text-slate-200">AI provider</Label>
             <div className="grid gap-2 sm:grid-cols-3">
@@ -185,11 +124,11 @@ export function ReviewWorkspace({
           </div>
 
           {provider === "ollama" ? (
-            <div className="lg:col-span-2">
-            <OllamaSettingsCard
-              settings={ollamaSettings}
-              onChange={setOllamaSettings}
-            />
+            <div>
+              <OllamaSettingsCard
+                settings={ollamaSettings}
+                onChange={setOllamaSettings}
+              />
             </div>
           ) : null}
         </div>

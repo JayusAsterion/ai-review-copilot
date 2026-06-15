@@ -33,7 +33,7 @@ const actionCards = [
   {
     title: "Create Test Cases",
     description:
-      "Planned module for structured regression and acceptance test generation.",
+      "Convert stories, bug reports, diffs, and QA notes into structured coverage.",
     href: "/test-cases",
     icon: ClipboardList,
   },

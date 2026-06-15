@@ -1,4 +1,9 @@
-import type { BugReportResult, ReviewResult } from "@/types/review";
+import type {
+  BugReportResult,
+  GeneratedTestCase,
+  ReviewResult,
+  TestCaseResult,
+} from "@/types/review";
 
 const severityLabel = {
   info: "Info",
@@ -115,5 +120,54 @@ export function bugReportResultToMarkdown(result: BugReportResult): string {
     "",
     "## Developer Comment",
     result.developerComment,
+  ].join("\n");
+}
+
+export function testCaseToMarkdown(testCase: GeneratedTestCase): string {
+  return [
+    `### ${testCase.id}: ${testCase.title}`,
+    "",
+    `- Priority: ${testCase.priority}`,
+    `- Type: ${testCase.type}`,
+    `- Preconditions: ${testCase.preconditions.join("; ") || "Not provided."}`,
+    "- Steps:",
+    ...formatNumberedList(testCase.steps, "Steps were not provided.").split(
+      "\n"
+    ),
+    `- Expected result: ${testCase.expectedResult}`,
+    "- Test data:",
+    formatList(testCase.testData, "No specific test data provided."),
+    `- Notes: ${testCase.notes || "No notes."}`,
+  ].join("\n");
+}
+
+export function testCaseResultToMarkdown(
+  result: Omit<TestCaseResult, "markdown">
+): string {
+  return [
+    "# Test Case Coverage",
+    "",
+    "## Summary",
+    result.summary,
+    "",
+    "## Coverage Focus",
+    formatList(result.coverageFocus, "No coverage focus provided."),
+    "",
+    "## Test Cases",
+    result.testCases.length > 0
+      ? result.testCases.map(testCaseToMarkdown).join("\n\n")
+      : "No test cases generated.",
+    "",
+    "## Edge Cases",
+    formatList(result.edgeCases, "No edge cases provided."),
+    "",
+    "## Regression Risks",
+    formatList(result.regressionRisks, "No regression risks provided."),
+    "",
+    "## Suggested Automation Candidates",
+    formatList(
+      result.automationCandidates,
+      "No automation candidates suggested."
+    ),
   ].join("\n");
 }
