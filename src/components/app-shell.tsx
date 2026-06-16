@@ -17,6 +17,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/auth/user-menu";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -85,7 +86,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                     <SheetHeader className="sr-only">
                       <SheetTitle>Navigation</SheetTitle>
                       <SheetDescription>
-                        Main AI Review Copilot modules
+                        Main Valra modules
                       </SheetDescription>
                     </SheetHeader>
                     <SidebarContent pathname={pathname} />
@@ -120,6 +121,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   Ollama not tested
                 </div>
                 <ThemeToggle />
+                <UserMenu />
               </div>
             </div>
           </header>
@@ -142,10 +144,10 @@ function SidebarContent({ pathname }: { pathname: string }) {
         </div>
         <div className="min-w-0">
           <p className="truncate text-sm font-semibold text-white">
-            AI Review Copilot
+            Valra
           </p>
           <p className="truncate text-xs text-slate-500">
-            Private review workspace
+            Safer pull requests
           </p>
         </div>
       </Link>

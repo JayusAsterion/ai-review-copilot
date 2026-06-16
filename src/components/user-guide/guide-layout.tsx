@@ -2,6 +2,7 @@ import {
   Bot,
   Bug,
   CheckCircle2,
+  ClipboardList,
   FileText,
   GitPullRequest,
   Server,
@@ -19,7 +20,7 @@ type GuideLayoutProps = {
 const quickStarts = [
   {
     title: "Local Ollama setup",
-    description: "Start Docker, pull a model, and verify `/api/tags`.",
+    description: "Install Ollama, pull a model, and verify `/api/tags`.",
     icon: Server,
   },
   {
@@ -31,8 +32,14 @@ const quickStarts = [
   {
     title: "Bug Report in 5 steps",
     description:
-      "Pick Bug Report, add QA details, include notes or attachments, generate Markdown.",
+      "Open `/bug-report`, add QA details, include notes or attachments, generate Markdown.",
     icon: Bug,
+  },
+  {
+    title: "Test Cases in 5 steps",
+    description:
+      "Open `/test-cases`, paste context, tune coverage, generate QA scenarios.",
+    icon: ClipboardList,
   },
 ];
 
@@ -50,13 +57,13 @@ export function GuideLayout({ sections }: GuideLayoutProps) {
               User Guide
             </h2>
             <p className="max-w-3xl text-base leading-7 text-slate-300">
-              Learn how to install, configure, and use AI Review Copilot with
-              local Ollama, static analysis, code reviews, and bug reports.
+              Learn how to install, configure, and use Valra with local Ollama,
+              static analysis, code reviews, and bug reports.
             </p>
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {quickStarts.map((item) => {
             const Icon = item.icon;
 
@@ -80,19 +87,24 @@ export function GuideLayout({ sections }: GuideLayoutProps) {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {["Implemented", "Planned", "Local-first", "Docker", "GPU Optional"].map(
-            (badge) => (
-              <Badge
-                key={badge}
-                className="border-white/10 bg-white/[0.04] text-slate-200"
-              >
-                {badge === "Implemented" ? (
-                  <CheckCircle2 className="size-3" />
-                ) : null}
-                {badge}
-              </Badge>
-            )
-          )}
+          {[
+            "Implemented",
+            "Planned",
+            "Local-first",
+            "Docker",
+            "GPU Optional",
+            "Recommended",
+          ].map((badge) => (
+            <Badge
+              key={badge}
+              className="border-white/10 bg-white/[0.04] text-slate-200"
+            >
+              {badge === "Implemented" ? (
+                <CheckCircle2 className="size-3" />
+              ) : null}
+              {badge}
+            </Badge>
+          ))}
           <Badge className="border-emerald-300/20 bg-emerald-400/10 text-emerald-100">
             <Bot className="size-3" />
             Browser to Ollama

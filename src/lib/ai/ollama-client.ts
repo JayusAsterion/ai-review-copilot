@@ -3,11 +3,13 @@ import {
   buildCodeReviewPrompt,
   buildTestCasesPrompt,
 } from "@/lib/ai/prompts";
+import { getOllamaPreset } from "@/lib/ai/ollama-presets";
 import {
   bugReportResultToMarkdown,
   testCaseResultToMarkdown,
 } from "@/lib/utils/markdown";
 import type {
+  AiModule,
   BugPriority,
   BugReportInput,
   BugReportResult,
@@ -17,8 +19,10 @@ import type {
   OllamaSettings,
   ReproductionRate,
   ReviewFinding,
+  ReviewFalsePositiveCheck,
   ReviewInput,
   ReviewResult,
+  ReviewSelfContradictionCheck,
   TestCaseInput,
   TestCasePriority,
   TestCaseResult,
@@ -99,27 +103,132 @@ async function readErrorBody(response: Response): Promise<string> {
   }
 }
 
+function normalizeFalsePositiveCheck(
+  value: ReviewFinding["falsePositiveCheck"]
+): ReviewFalsePositiveCheck {
+  if (typeof value === "string") {
+    return {
+      existingHandlingFound: "no",
+      existingHandling: "Not specified.",
+      remainingIssue: value || "No false-positive check was provided.",
+    };
+  }
+
+  if (value && typeof value === "object") {
+    return {
+      existingHandlingFound:
+        value.existingHandlingFound === "yes" ? "yes" : "no",
+      existingHandling:
+        typeof value.existingHandling === "string"
+          ? value.existingHandling
+          : "Not specified.",
+      remainingIssue:
+        typeof value.remainingIssue === "string"
+          ? value.remainingIssue
+          : "No remaining issue was explained.",
+    };
+  }
+
+  return {
+    existingHandlingFound: "no",
+    existingHandling: "Not specified.",
+    remainingIssue: "No false-positive check was provided.",
+  };
+}
+
+function normalizeSelfContradictionCheck(
+  value: ReviewFinding["selfContradictionCheck"]
+): ReviewSelfContradictionCheck {
+  if (typeof value === "string") {
+    return {
+      titleMatchesEvidence: "yes",
+      failurePathSupportedByEvidence: "yes",
+      suggestedFixMatchesIssue: "yes",
+    };
+  }
+
+  if (value && typeof value === "object") {
+    return {
+      titleMatchesEvidence:
+        value.titleMatchesEvidence === "no" ? "no" : "yes",
+      failurePathSupportedByEvidence:
+        value.failurePathSupportedByEvidence === "no" ? "no" : "yes",
+      suggestedFixMatchesIssue:
+        value.suggestedFixMatchesIssue === "no" ? "no" : "yes",
+    };
+  }
+
+  return {
+    titleMatchesEvidence: "yes",
+    failurePathSupportedByEvidence: "yes",
+    suggestedFixMatchesIssue: "yes",
+  };
+}
+
 function normalizeFinding(value: Partial<ReviewFinding>): ReviewFinding {
+  const rawClassification =
+    typeof value.classification === "string"
+      ? value.classification.toLowerCase()
+      : "";
+  const confidence =
+    value.confidence === "high" ||
+    value.confidence === "medium" ||
+    value.confidence === "low"
+      ? value.confidence
+      : "medium";
+  const classification =
+    rawClassification === "confirmed issue" ||
+    rawClassification === "potential issue" ||
+    rawClassification === "needs verification" ||
+    rawClassification === "recommendation"
+      ? rawClassification
+      : "potential issue";
+  const failurePath =
+    typeof value.failurePath === "string"
+      ? value.failurePath
+      : typeof value.whyThisMatters === "string"
+        ? value.whyThisMatters
+        : "No concrete failure path was provided.";
+  const actualImpact =
+    typeof value.actualImpact === "string"
+      ? value.actualImpact
+      : "Review the evidence and failure path before merging.";
+
   return {
     title: typeof value.title === "string" ? value.title : "Review finding",
     severity:
       value.severity === "info" ||
       value.severity === "low" ||
       value.severity === "medium" ||
-      value.severity === "high"
+      value.severity === "high" ||
+      value.severity === "critical"
         ? value.severity
         : "medium",
+    confidence,
+    classification,
     type: typeof value.type === "string" ? value.type : "general",
     file: typeof value.file === "string" ? value.file : null,
     line: typeof value.line === "number" ? value.line : null,
+    evidence:
+      typeof value.evidence === "string" ? value.evidence : "Not specified.",
     description:
       typeof value.description === "string"
         ? value.description
         : "The model returned an incomplete finding.",
+    failurePath,
+    actualImpact,
+    whyThisMatters:
+      typeof value.whyThisMatters === "string"
+        ? value.whyThisMatters
+        : actualImpact,
     suggestedFix:
       typeof value.suggestedFix === "string"
         ? value.suggestedFix
         : "Review this area manually before merging.",
+    falsePositiveCheck: normalizeFalsePositiveCheck(value.falsePositiveCheck),
+    selfContradictionCheck: normalizeSelfContradictionCheck(
+      value.selfContradictionCheck
+    ),
   };
 }
 
@@ -129,12 +238,27 @@ function normalizeReviewResult(value: unknown, fallbackComment: string): ReviewR
   }
 
   const record = value as Partial<ReviewResult>;
+  const normalizedRiskLevel =
+    typeof record.riskLevel === "string"
+      ? record.riskLevel.toLowerCase()
+      : "";
   const riskLevel =
-    record.riskLevel === "low" ||
-    record.riskLevel === "medium" ||
-    record.riskLevel === "high"
-      ? record.riskLevel
+    normalizedRiskLevel === "low" ||
+    normalizedRiskLevel === "low-medium" ||
+    normalizedRiskLevel === "medium" ||
+    normalizedRiskLevel === "high"
+      ? normalizedRiskLevel
       : "medium";
+  const needsVerification = Array.isArray(record.needsVerification)
+    ? record.needsVerification.filter(
+        (item): item is string => typeof item === "string"
+      )
+    : [];
+  const likelyFalsePositives = Array.isArray(record.likelyFalsePositives)
+    ? record.likelyFalsePositives.filter(
+        (item): item is string => typeof item === "string"
+      )
+    : [];
 
   return {
     summary:
@@ -147,6 +271,9 @@ function normalizeReviewResult(value: unknown, fallbackComment: string): ReviewR
           normalizeFinding(finding as Partial<ReviewFinding>)
         )
       : [],
+    needsVerification:
+      needsVerification.length > 0 ? needsVerification : likelyFalsePositives,
+    likelyFalsePositives,
     testCases: Array.isArray(record.testCases)
       ? record.testCases.filter((item): item is string => typeof item === "string")
       : [],
@@ -376,6 +503,71 @@ export async function testOllamaConnection(
   }
 }
 
+export async function getInstalledOllamaModels(
+  baseUrl: string
+): Promise<string[]> {
+  const connection = await testOllamaConnection(baseUrl);
+
+  if (!connection.ok) {
+    throw new Error(
+      connection.error ??
+        "Unable to connect to Ollama. Make sure Ollama is running locally."
+    );
+  }
+
+  return connection.models.map((model) => model.name);
+}
+
+export function isModelInstalled(
+  modelName: string,
+  installedModels: string[]
+): boolean {
+  return installedModels.some((model) => isSameOllamaModel(model, modelName));
+}
+
+export function isSameOllamaModel(firstModel: string, secondModel: string) {
+  return (
+    normalizeOllamaModelName(firstModel) ===
+    normalizeOllamaModelName(secondModel)
+  );
+}
+
+function normalizeOllamaModelName(modelName: string) {
+  const normalizedModelName = modelName.trim();
+
+  return normalizedModelName.endsWith(":latest")
+    ? normalizedModelName.slice(0, -":latest".length)
+    : normalizedModelName;
+}
+
+async function validateSelectedOllamaModel(
+  module: AiModule,
+  settings: OllamaSettings
+) {
+  const model = settings.model.trim();
+
+  if (!model) {
+    throw new Error("Choose an Ollama model before running generation.");
+  }
+
+  const preset = getOllamaPreset(module);
+  const installedModels = await getInstalledOllamaModels(settings.baseUrl);
+
+  if (!isModelInstalled(model, installedModels)) {
+    const fallbackInstalled = isModelInstalled(
+      preset.fallbackModel,
+      installedModels
+    );
+    const fallbackHint = fallbackInstalled
+      ? ` Switch to ${preset.fallbackModel} in Settings to use the fallback.`
+      : ` Pull ${preset.fallbackModel} or create the optimized profile from the User Guide.`;
+
+    throw new Error(
+      `${model} is not installed locally. Create it from the User Guide or switch models in Settings.${fallbackHint}`
+    );
+  }
+}
+
 export async function runOllamaCodeReview(
   input: ReviewInput,
   settings: OllamaSettings
@@ -387,6 +579,8 @@ export async function runOllamaCodeReview(
   }
 
   try {
+    await validateSelectedOllamaModel("code-review", settings);
+
     const response = await fetch(getOllamaEndpoint(settings.baseUrl, "api/chat"), {
       method: "POST",
       headers: {
@@ -397,14 +591,15 @@ export async function runOllamaCodeReview(
         stream: false,
         format: "json",
         options: {
-          temperature: 0.2,
-          num_predict: 1400,
+          temperature: 0.15,
+          top_p: 0.8,
+          num_predict: 3200,
         },
         messages: [
           {
             role: "system",
             content:
-              "You are a senior software engineer and QA-focused code reviewer. Return concise, actionable review output as strict JSON only.",
+              "You are a senior software engineer and QA-focused code reviewer. Return only strict JSON that can be parsed by JSON.parse. Escape double quotes inside string values. Do not use markdown fences or prose outside JSON. Report at most 3 actionable findings backed by evidence. Before reporting any finding, perform a diff-handling check and a self-contradiction check. Remove findings whose title, evidence, failure path, impact, fix, or false-positive check contradicts code shown in the diff or contradicts itself. Separate confirmed issues from assumptions, avoid false positives, downgrade partially handled concerns, and calibrate severity conservatively.",
           },
           {
             role: "user",
@@ -488,6 +683,8 @@ export async function runOllamaBugReport(
   }
 
   try {
+    await validateSelectedOllamaModel("bug-report", settings);
+
     const response = await fetch(getOllamaEndpoint(settings.baseUrl, "api/chat"), {
       method: "POST",
       headers: {
@@ -499,7 +696,8 @@ export async function runOllamaBugReport(
         format: "json",
         options: {
           temperature: 0.2,
-          num_predict: 1600,
+          top_p: 0.85,
+          num_predict: 1200,
         },
         messages: [
           {
@@ -598,6 +796,8 @@ export async function runOllamaTestCases(
   }
 
   try {
+    await validateSelectedOllamaModel("test-cases", settings);
+
     const response = await fetch(getOllamaEndpoint(settings.baseUrl, "api/chat"), {
       method: "POST",
       headers: {
@@ -610,7 +810,8 @@ export async function runOllamaTestCases(
         format: "json",
         options: {
           temperature: 0.2,
-          num_predict: 2200,
+          top_p: 0.85,
+          num_predict: 1600,
         },
         messages: [
           {

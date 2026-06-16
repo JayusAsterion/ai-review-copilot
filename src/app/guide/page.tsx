@@ -7,7 +7,7 @@ import { userGuideSections } from "@/data/user-guide";
 export const metadata: Metadata = {
   title: "User Guide",
   description:
-    "Learn how to install, configure, and use AI Review Copilot with local Ollama, static analysis, code reviews, and bug reports.",
+    "Learn how to install, configure, and use Valra with local Ollama, static analysis, code reviews, bug reports, and test cases.",
 };
 
 export default function GuidePage() {

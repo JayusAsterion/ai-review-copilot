@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: ai-review-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ai_review_copilot
+      POSTGRES_USER: ai_review_user
+      POSTGRES_PASSWORD: ai_review_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - ai_review_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  ai_review_postgres_data:

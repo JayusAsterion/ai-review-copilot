@@ -8,9 +8,12 @@ import {
   Lock,
   Server,
 } from "lucide-react";
+import { getServerSession } from "next-auth";
 import Link from "next/link";
 
+import { authOptions } from "@/auth";
 import { AppShell } from "@/components/app-shell";
+import { LoginScreen } from "@/components/auth/login-screen";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -46,14 +49,20 @@ const actionCards = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await getServerSession(authOptions);
+
+  if (!session) {
+    return <LoginScreen />;
+  }
+
   const selectedModel =
     process.env.NEXT_PUBLIC_DEFAULT_OLLAMA_MODEL ?? "qwen3-coder:30b";
 
   return (
     <AppShell
       title="Dashboard"
-      description="Local-first AI review operations for developers and QA teams."
+      description="AI-powered code review copilot for safer pull requests."
     >
       <div className="space-y-6">
         <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04]">
@@ -61,7 +70,7 @@ export default function DashboardPage() {
             <div className="space-y-5">
               <Badge className="border-emerald-300/20 bg-emerald-400/10 text-emerald-100">
                 <Lock className="size-3" />
-                Local-first AI review copilot
+                Valra
               </Badge>
               <div className="max-w-3xl space-y-3">
                 <h2 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">

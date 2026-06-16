@@ -9,16 +9,16 @@ import { motion } from "motion/react";
 import type { ComponentType } from "react";
 import { useState } from "react";
 
-import { OllamaSettingsCard } from "@/components/provider-settings/ollama-settings-card";
+import { OllamaModelStatus } from "@/components/provider-settings/ollama-model-status";
 import { BugReportForm } from "@/components/review-input/bug-report-form";
 import { CodeReviewForm } from "@/components/review-input/code-review-form";
 import { BugReportResultPanel } from "@/components/review-result/bug-report-result-panel";
 import { ReviewResultPanel } from "@/components/review-result/review-result-panel";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { useOllamaModuleSettings } from "@/lib/ai/ollama-local-settings";
 import type {
   BugReportResult,
-  OllamaSettings,
   ReviewMode,
   ReviewProvider,
   ReviewResult,
@@ -61,11 +61,7 @@ export function ReviewWorkspace({
 }: ReviewWorkspaceProps) {
   const mode = initialMode;
   const [provider, setProvider] = useState<ReviewProvider>("ollama");
-  const [ollamaSettings, setOllamaSettings] = useState<OllamaSettings>({
-    baseUrl:
-      process.env.NEXT_PUBLIC_DEFAULT_OLLAMA_URL ?? "http://localhost:11434",
-    model: process.env.NEXT_PUBLIC_DEFAULT_OLLAMA_MODEL ?? "qwen3-coder:30b",
-  });
+  const { moduleSettings, setModuleModel } = useOllamaModuleSettings(mode);
   const [codeReviewResult, setCodeReviewResult] =
     useState<ReviewResult | null>(null);
   const [bugReportResult, setBugReportResult] =
@@ -124,12 +120,11 @@ export function ReviewWorkspace({
           </div>
 
           {provider === "ollama" ? (
-            <div>
-              <OllamaSettingsCard
-                settings={ollamaSettings}
-                onChange={setOllamaSettings}
-              />
-            </div>
+            <OllamaModelStatus
+              module={mode}
+              settings={moduleSettings}
+              onModelChange={(model) => setModuleModel(mode, model)}
+            />
           ) : null}
         </div>
       </section>
@@ -138,7 +133,7 @@ export function ReviewWorkspace({
         <>
           <BugReportForm
             provider={provider}
-            ollamaSettings={ollamaSettings}
+            ollamaSettings={moduleSettings}
             onResult={setBugReportResult}
           />
           <BugReportResultPanel result={bugReportResult} />
@@ -147,7 +142,7 @@ export function ReviewWorkspace({
         <>
           <CodeReviewForm
             provider={provider}
-            ollamaSettings={ollamaSettings}
+            ollamaSettings={moduleSettings}
             onResult={setCodeReviewResult}
             onAnalyzingChange={setIsAnalyzing}
           />

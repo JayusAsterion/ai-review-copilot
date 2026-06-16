@@ -1,6 +1,8 @@
-# AI Review Copilot
+# Valra
 
-AI Review Copilot is a local-first AI copilot for code reviews, bug reports, QA test cases, and PR-ready comments. It supports local Ollama models so source code, pull request diffs, and QA context can stay on the user's machine.
+AI-powered code review copilot for safer pull requests.
+
+Valra is a local-first AI code review copilot for safer pull requests. It helps developers and QA teams review code, generate bug reports, and create test cases using local Ollama models and optional Azure DevOps integration.
 
 This project is currently in MVP development.
 
@@ -71,9 +73,58 @@ Example `.env.local`:
 ```env
 NEXT_PUBLIC_DEFAULT_OLLAMA_URL=http://localhost:11434
 NEXT_PUBLIC_DEFAULT_OLLAMA_MODEL=qwen3-coder:30b
+
+NEXTAUTH_URL=http://localhost:3000
+AUTH_SECRET=
+AUTH_MICROSOFT_ENTRA_ID_ID=
+AUTH_MICROSOFT_ENTRA_ID_SECRET=
+AUTH_MICROSOFT_ENTRA_ID_ISSUER=https://login.microsoftonline.com/<tenant-id>/v2.0
+
+DATABASE_URL="postgresql://ai_review_user:ai_review_password@localhost:5432/ai_review_copilot?schema=public"
+
+TOKEN_ENCRYPTION_SECRET=
 ```
 
 Cloud provider keys may exist in the template for future work, but cloud AI review is planned and not implemented in the current MVP.
+
+`TOKEN_ENCRYPTION_SECRET` is required to encrypt OAuth `access_token`, `refresh_token`, and `id_token` values before they are stored in PostgreSQL. Generate a 32-byte base64 secret with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+Keep `.env.local` private and never commit it. Existing plaintext OAuth tokens from earlier local testing are still readable for compatibility; sign out and sign in again after setting `TOKEN_ENCRYPTION_SECRET` so newly returned provider tokens are stored encrypted.
+
+To encrypt existing OAuth token values from earlier local logins without deleting accounts or sessions, run:
+
+```bash
+npm run tokens:encrypt-existing
+```
+
+Microsoft Entra redirect URIs:
+
+```text
+http://localhost:3000/api/auth/callback/azure-ad
+https://ai-review-copilot.vercel.app/api/auth/callback/azure-ad
+```
+
+For Vercel production, set `NEXTAUTH_URL`, `AUTH_SECRET`, the Microsoft Entra variables, `DATABASE_URL`, and `TOKEN_ENCRYPTION_SECRET` in Vercel Environment Variables. Use a cloud PostgreSQL provider such as Neon, Prisma Postgres, or Supabase.
+
+## Local PostgreSQL and Prisma
+
+PostgreSQL is expected to run locally through Docker. This repository includes `docker/docker-compose.postgres.yml` for the local database.
+
+Apply the Prisma auth schema:
+
+```bash
+npx prisma generate
+npx prisma migrate dev --name init_auth_persistence
+npm run dev
+```
+
+The initial schema persists NextAuth users, OAuth accounts, database sessions, verification tokens, and minimal future Azure DevOps connection metadata. It does not store Azure DevOps access tokens or implement Azure DevOps API calls.
+
+OAuth provider tokens stored by NextAuth in the `Account` table are encrypted at rest with `TOKEN_ENCRYPTION_SECRET`.
 
 ## Run Ollama with Docker (CPU)
 
@@ -408,4 +459,4 @@ npm run lint
 
 ## Development Status
 
-AI Review Copilot is currently in MVP development. The current focus is local-first code review with Ollama, static heuristic checks, file upload, and Markdown output. Cloud AI providers, persistence, and expanded review history are planned future work.
+Valra is currently in MVP development. The current focus is local-first code review with Ollama, static heuristic checks, file upload, Microsoft Entra login, PostgreSQL auth persistence, Azure DevOps PR context import, and Markdown output. Cloud AI providers and expanded review history are planned future work.

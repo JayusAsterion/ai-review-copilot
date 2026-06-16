@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
+import { AuthGate } from "@/components/auth/auth-gate";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
@@ -16,8 +17,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AI Review Copilot",
-  description: "Local-first AI code review workflow.",
+  title: "Valra",
+  description: "AI-powered code review copilot for safer pull requests.",
 };
 
 export default function RootLayout({
@@ -33,7 +34,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <ThemeProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <TooltipProvider>
+            <AuthGate>{children}</AuthGate>
+          </TooltipProvider>
           <Toaster richColors closeButton theme="dark" />
         </ThemeProvider>
       </body>

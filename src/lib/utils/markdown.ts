@@ -10,7 +10,63 @@ const severityLabel = {
   low: "Low",
   medium: "Medium",
   high: "High",
+  critical: "Critical",
 } as const;
+
+function formatFalsePositiveCheck(
+  check: ReviewResult["findings"][number]["falsePositiveCheck"]
+) {
+  if (!check) {
+    return null;
+  }
+
+  if (typeof check === "string") {
+    return [
+      "- False-positive check:",
+      "  - Existing handling found in diff: No",
+      `  - If yes, why this is still an issue: ${check}`,
+    ].join("\n");
+  }
+
+  return [
+    "- False-positive check:",
+    `  - Existing handling found in diff: ${
+      check.existingHandlingFound === "yes" ? "Yes" : "No"
+    }`,
+    `  - Existing handling: ${check.existingHandling}`,
+    `  - If yes, why this is still an issue: ${check.remainingIssue}`,
+  ].join("\n");
+}
+
+function formatSelfContradictionCheck(
+  check: ReviewResult["findings"][number]["selfContradictionCheck"]
+) {
+  if (!check) {
+    return null;
+  }
+
+  if (typeof check === "string") {
+    return [
+      "- Self-contradiction check:",
+      "  - Title matches evidence: Yes",
+      "  - Failure path supported by evidence: Yes",
+      "  - Suggested fix matches the issue: Yes",
+    ].join("\n");
+  }
+
+  return [
+    "- Self-contradiction check:",
+    `  - Title matches evidence: ${
+      check.titleMatchesEvidence === "yes" ? "Yes" : "No"
+    }`,
+    `  - Failure path supported by evidence: ${
+      check.failurePathSupportedByEvidence === "yes" ? "Yes" : "No"
+    }`,
+    `  - Suggested fix matches the issue: ${
+      check.suggestedFixMatchesIssue === "yes" ? "Yes" : "No"
+    }`,
+  ].join("\n");
+}
 
 export function reviewResultToMarkdown(result: ReviewResult): string {
   const findings =
@@ -28,12 +84,26 @@ export function reviewResultToMarkdown(result: ReviewResult): string {
               `### ${index + 1}. ${finding.title}`,
               "",
               `- Severity: ${severityLabel[finding.severity]}`,
+              finding.confidence
+                ? `- Confidence: ${capitalize(finding.confidence)}`
+                : null,
+              finding.classification
+                ? `- Classification: ${capitalize(finding.classification)}`
+                : null,
               `- Type: ${finding.type}`,
               location ? `- Location: ${location}` : null,
+              finding.evidence ? `- Evidence: ${finding.evidence}` : null,
+              finding.failurePath
+                ? `- Failure path: ${finding.failurePath}`
+                : null,
+              finding.actualImpact
+                ? `- Actual impact: ${finding.actualImpact}`
+                : null,
+              `- Suggested fix: ${finding.suggestedFix}`,
+              formatFalsePositiveCheck(finding.falsePositiveCheck),
+              formatSelfContradictionCheck(finding.selfContradictionCheck),
               "",
               finding.description,
-              "",
-              `Suggested fix: ${finding.suggestedFix}`,
             ]
               .filter(Boolean)
               .join("\n");
@@ -45,6 +115,14 @@ export function reviewResultToMarkdown(result: ReviewResult): string {
     result.testCases.length > 0
       ? result.testCases.map((testCase) => `- ${testCase}`).join("\n")
       : "- No additional test cases suggested.";
+  const notReported =
+    result.needsVerification && result.needsVerification.length > 0
+      ? result.needsVerification
+      : result.likelyFalsePositives ?? [];
+  const needsVerification =
+    notReported.length > 0
+      ? notReported.map((item) => `- ${item}`).join("\n")
+      : "- No weak or speculative findings were reported.";
 
   return [
     "# Code Review Result",
@@ -59,6 +137,10 @@ export function reviewResultToMarkdown(result: ReviewResult): string {
     "",
     findings,
     "",
+    "## Needs Verification / Not Reported as Bugs",
+    "",
+    needsVerification,
+    "",
     "## Suggested Test Cases",
     "",
     testCases,
@@ -67,6 +149,10 @@ export function reviewResultToMarkdown(result: ReviewResult): string {
     "",
     result.prComment,
   ].join("\n");
+}
+
+function capitalize(value: string): string {
+  return `${value.slice(0, 1).toUpperCase()}${value.slice(1)}`;
 }
 
 function formatList(items: string[], fallback: string): string {

@@ -39,10 +39,18 @@ const severityClassName: Record<ReviewFinding["severity"], string> = {
   low: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
   medium: "border-amber-300/20 bg-amber-300/10 text-amber-200",
   high: "border-rose-300/25 bg-rose-400/10 text-rose-200",
+  critical: "border-red-300/30 bg-red-500/15 text-red-100",
 };
+
+const confidenceClassName = {
+  high: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+  medium: "border-amber-300/20 bg-amber-300/10 text-amber-200",
+  low: "border-slate-300/20 bg-slate-300/10 text-slate-200",
+} as const;
 
 const riskClassName: Record<ReviewResult["riskLevel"], string> = {
   low: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+  "low-medium": "border-lime-300/20 bg-lime-300/10 text-lime-200",
   medium: "border-amber-300/20 bg-amber-300/10 text-amber-200",
   high: "border-rose-300/25 bg-rose-400/10 text-rose-200",
 };
@@ -80,6 +88,61 @@ function LoadingState() {
       </div>
     </section>
   );
+}
+
+function formatFalsePositiveCheck(
+  check: ReviewFinding["falsePositiveCheck"]
+) {
+  if (!check) {
+    return null;
+  }
+
+  if (typeof check === "string") {
+    return [
+      "False-positive check:",
+      "Existing handling found in diff: No",
+      `If yes, why this is still an issue: ${check}`,
+    ].join("\n");
+  }
+
+  return [
+    "False-positive check:",
+    `Existing handling found in diff: ${
+      check.existingHandlingFound === "yes" ? "Yes" : "No"
+    }`,
+    `Existing handling: ${check.existingHandling}`,
+    `If yes, why this is still an issue: ${check.remainingIssue}`,
+  ].join("\n");
+}
+
+function formatSelfContradictionCheck(
+  check: ReviewFinding["selfContradictionCheck"]
+) {
+  if (!check) {
+    return null;
+  }
+
+  if (typeof check === "string") {
+    return [
+      "Self-contradiction check:",
+      "Title matches evidence: Yes",
+      "Failure path supported by evidence: Yes",
+      "Suggested fix matches the issue: Yes",
+    ].join("\n");
+  }
+
+  return [
+    "Self-contradiction check:",
+    `Title matches evidence: ${
+      check.titleMatchesEvidence === "yes" ? "Yes" : "No"
+    }`,
+    `Failure path supported by evidence: ${
+      check.failurePathSupportedByEvidence === "yes" ? "Yes" : "No"
+    }`,
+    `Suggested fix matches the issue: ${
+      check.suggestedFixMatchesIssue === "yes" ? "Yes" : "No"
+    }`,
+  ].join("\n");
 }
 
 export function ReviewResultPanel({
@@ -122,8 +185,20 @@ export function ReviewResultPanel({
       finding.file ? `File: \`${finding.file}\`` : null,
       finding.line ? `Line: ${finding.line}` : null,
       `Severity: ${finding.severity}`,
+      finding.confidence ? `Confidence: ${finding.confidence}` : null,
+      finding.classification
+        ? `Classification: ${finding.classification}`
+        : null,
+      finding.evidence ? `Evidence: ${finding.evidence}` : null,
       finding.description,
+      finding.failurePath ? `Failure path: ${finding.failurePath}` : null,
+      finding.actualImpact ? `Actual impact: ${finding.actualImpact}` : null,
+      finding.whyThisMatters && !finding.actualImpact
+        ? `Why this matters: ${finding.whyThisMatters}`
+        : null,
       `Suggested fix: ${finding.suggestedFix}`,
+      formatFalsePositiveCheck(finding.falsePositiveCheck),
+      formatSelfContradictionCheck(finding.selfContradictionCheck),
     ]
       .filter(Boolean)
       .join("\n\n");
@@ -268,13 +343,64 @@ export function ReviewResultPanel({
                         >
                           {finding.severity}
                         </Badge>
+                        {finding.confidence ? (
+                          <Badge
+                            className={`capitalize ${confidenceClassName[finding.confidence]}`}
+                          >
+                            {finding.confidence} confidence
+                          </Badge>
+                        ) : null}
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3">
+                    {finding.classification || finding.evidence ? (
+                      <div className="grid gap-2 md:grid-cols-2">
+                        {finding.classification ? (
+                          <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                            <p className="text-xs font-medium uppercase text-slate-500">
+                              Classification
+                            </p>
+                            <p className="mt-1 text-sm capitalize leading-6 text-slate-200">
+                              {finding.classification}
+                            </p>
+                          </div>
+                        ) : null}
+                        {finding.evidence ? (
+                          <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                            <p className="text-xs font-medium uppercase text-slate-500">
+                              Evidence
+                            </p>
+                            <p className="mt-1 break-words font-mono text-xs leading-5 text-slate-200">
+                              {finding.evidence}
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
                     <p className="text-sm leading-6 text-slate-400">
                       {finding.description}
                     </p>
+                    {finding.failurePath ? (
+                      <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                        <p className="text-xs font-medium uppercase text-slate-500">
+                          Failure path
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-200">
+                          {finding.failurePath}
+                        </p>
+                      </div>
+                    ) : null}
+                    {finding.actualImpact || finding.whyThisMatters ? (
+                      <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                        <p className="text-xs font-medium uppercase text-slate-500">
+                          Actual impact
+                        </p>
+                        <p className="mt-1 text-sm leading-6 text-slate-200">
+                          {finding.actualImpact ?? finding.whyThisMatters}
+                        </p>
+                      </div>
+                    ) : null}
                     <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
                       <p className="text-xs font-medium uppercase text-slate-500">
                         Suggested fix
@@ -283,6 +409,92 @@ export function ReviewResultPanel({
                         {finding.suggestedFix}
                       </p>
                     </div>
+                    {finding.falsePositiveCheck ? (
+                      <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                        <p className="text-xs font-medium uppercase text-slate-500">
+                          False-positive check
+                        </p>
+                        {typeof finding.falsePositiveCheck === "string" ? (
+                          <p className="mt-1 text-sm leading-6 text-slate-200">
+                            {finding.falsePositiveCheck}
+                          </p>
+                        ) : (
+                          <dl className="mt-2 space-y-2 text-sm leading-6 text-slate-200">
+                            <div>
+                              <dt className="text-xs text-slate-500">
+                                Existing handling found in diff
+                              </dt>
+                              <dd className="capitalize">
+                                {finding.falsePositiveCheck
+                                  .existingHandlingFound === "yes"
+                                  ? "Yes"
+                                  : "No"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs text-slate-500">
+                                Existing handling
+                              </dt>
+                              <dd>{finding.falsePositiveCheck.existingHandling}</dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs text-slate-500">
+                                If yes, why this is still an issue
+                              </dt>
+                              <dd>{finding.falsePositiveCheck.remainingIssue}</dd>
+                            </div>
+                          </dl>
+                        )}
+                      </div>
+                    ) : null}
+                    {finding.selfContradictionCheck ? (
+                      <div className="rounded-xl border border-white/10 bg-white/[0.035] p-3">
+                        <p className="text-xs font-medium uppercase text-slate-500">
+                          Self-contradiction check
+                        </p>
+                        {typeof finding.selfContradictionCheck === "string" ? (
+                          <p className="mt-1 text-sm leading-6 text-slate-200">
+                            {finding.selfContradictionCheck}
+                          </p>
+                        ) : (
+                          <dl className="mt-2 space-y-2 text-sm leading-6 text-slate-200">
+                            <div>
+                              <dt className="text-xs text-slate-500">
+                                Title matches evidence
+                              </dt>
+                              <dd className="capitalize">
+                                {finding.selfContradictionCheck
+                                  .titleMatchesEvidence === "yes"
+                                  ? "Yes"
+                                  : "No"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs text-slate-500">
+                                Failure path supported by evidence
+                              </dt>
+                              <dd className="capitalize">
+                                {finding.selfContradictionCheck
+                                  .failurePathSupportedByEvidence === "yes"
+                                  ? "Yes"
+                                  : "No"}
+                              </dd>
+                            </div>
+                            <div>
+                              <dt className="text-xs text-slate-500">
+                                Suggested fix matches the issue
+                              </dt>
+                              <dd className="capitalize">
+                                {finding.selfContradictionCheck
+                                  .suggestedFixMatchesIssue === "yes"
+                                  ? "Yes"
+                                  : "No"}
+                              </dd>
+                            </div>
+                          </dl>
+                        )}
+                      </div>
+                    ) : null}
                     <Button
                       type="button"
                       variant="outline"
@@ -301,6 +513,35 @@ export function ReviewResultPanel({
             <div className="rounded-xl border border-white/10 bg-black/20 p-4 text-sm text-slate-400">
               No findings were detected.
             </div>
+          )}
+        </div>
+
+        <Separator />
+
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-white">
+            Needs Verification / Not Reported as Bugs
+          </h3>
+          {(result.needsVerification?.length ?? 0) > 0 ||
+          (result.likelyFalsePositives?.length ?? 0) > 0 ? (
+            <ul className="space-y-2">
+              {(
+                result.needsVerification ??
+                result.likelyFalsePositives ??
+                []
+              ).map((item, index) => (
+                <li
+                  key={`${item}-${index}`}
+                  className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm leading-6 text-slate-300"
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-slate-400">
+              No weak or speculative findings were reported.
+            </p>
           )}
         </div>
 

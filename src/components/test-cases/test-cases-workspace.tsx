@@ -14,7 +14,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { OllamaSettingsCard } from "@/components/provider-settings/ollama-settings-card";
+import { OllamaModelStatus } from "@/components/provider-settings/ollama-model-status";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { runOllamaTestCases } from "@/lib/ai/ollama-client";
+import { useOllamaModuleSettings } from "@/lib/ai/ollama-local-settings";
 import { testCaseToMarkdown } from "@/lib/utils/markdown";
 import type {
   GeneratedTestCase,
@@ -38,7 +39,6 @@ import type {
   TestCaseOutputFormat,
   TestCasePriority,
   TestCaseResult,
-  OllamaSettings,
 } from "@/types/review";
 
 const testTypes = [
@@ -78,11 +78,8 @@ export function TestCasesWorkspace() {
   const [outputFormat, setOutputFormat] =
     useState<TestCaseOutputFormat>("detailed");
   const [priority, setPriority] = useState<TestCasePriority>("medium");
-  const [ollamaSettings, setOllamaSettings] = useState<OllamaSettings>({
-    baseUrl:
-      process.env.NEXT_PUBLIC_DEFAULT_OLLAMA_URL ?? "http://localhost:11434",
-    model: process.env.NEXT_PUBLIC_DEFAULT_OLLAMA_MODEL ?? "qwen3-coder:30b",
-  });
+  const { moduleSettings, setModuleModel } =
+    useOllamaModuleSettings("test-cases");
   const [result, setResult] = useState<TestCaseResult | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -116,7 +113,7 @@ export function TestCasesWorkspace() {
         priority,
       };
 
-      const nextResult = await runOllamaTestCases(input, ollamaSettings);
+      const nextResult = await runOllamaTestCases(input, moduleSettings);
       setResult(nextResult);
       toast.success("Test cases generated");
     } catch (caughtError) {
@@ -191,15 +188,16 @@ export function TestCasesWorkspace() {
           <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-xs text-slate-300">
             <span className="text-slate-500">Model</span>{" "}
             <span className="font-mono text-slate-100">
-              {ollamaSettings.model || "qwen3-coder:30b"}
+              {moduleSettings.model}
             </span>
           </div>
         </div>
       </section>
 
-      <OllamaSettingsCard
-        settings={ollamaSettings}
-        onChange={setOllamaSettings}
+      <OllamaModelStatus
+        module="test-cases"
+        settings={moduleSettings}
+        onModelChange={(model) => setModuleModel("test-cases", model)}
       />
 
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_24rem]">

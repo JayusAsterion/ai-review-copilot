@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
-import { Database, KeyRound, Server, ShieldCheck } from "lucide-react";
+import { Database, KeyRound, PlugZap, Server, ShieldCheck } from "lucide-react";
+import Link from "next/link";
 
 import { AppShell } from "@/components/app-shell";
+import { OptimizedOllamaModelsSettings } from "@/components/provider-settings/optimized-ollama-models-settings";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -31,6 +34,34 @@ export default function SettingsPage() {
                 local-first privacy model.
               </p>
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-white/10 bg-white/[0.035] p-5 sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 gap-4">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-2xl bg-cyan-300/10 text-cyan-100 ring-1 ring-cyan-300/20">
+                <PlugZap className="size-5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-white">
+                  Connected Accounts
+                </h2>
+                <p className="mt-1 max-w-2xl text-sm leading-6 text-slate-400">
+                  View Microsoft sign-in metadata, future Azure DevOps setup
+                  state, and local runtime boundaries without exposing tokens.
+                </p>
+              </div>
+            </div>
+            <Button
+              asChild
+              variant="outline"
+              className="w-fit rounded-xl border-white/10 bg-white/[0.04] text-slate-100 hover:bg-white/[0.08]"
+            >
+              <Link href="/settings/connected-accounts">
+                Open Connected Accounts
+              </Link>
+            </Button>
           </div>
         </section>
 
@@ -75,6 +106,8 @@ export default function SettingsPage() {
             );
           })}
         </section>
+
+        <OptimizedOllamaModelsSettings />
       </div>
     </AppShell>
   );

@@ -11,6 +11,10 @@ const badgeStyles: Record<GuideBadge, string> = {
   "Local-first": "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
   Docker: "border-sky-300/20 bg-sky-400/10 text-sky-100",
   "GPU Optional": "border-fuchsia-300/20 bg-fuchsia-400/10 text-fuchsia-100",
+  Required: "border-rose-300/20 bg-rose-400/10 text-rose-100",
+  Recommended: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
+  Optional: "border-slate-300/20 bg-slate-400/10 text-slate-100",
+  "Coming soon": "border-amber-300/20 bg-amber-400/10 text-amber-100",
 };
 
 type GuideSectionProps = {

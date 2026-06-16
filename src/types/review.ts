@@ -1,9 +1,8 @@
 export type ReviewProvider = "ollama" | "static" | "cloud";
 
-export type ReviewMode =
-  | "code-review"
-  | "bug-report"
-  | "test-cases";
+export type AiModule = "code-review" | "bug-report" | "test-cases";
+
+export type ReviewMode = AiModule;
 
 export type UploadedReviewFile = {
   id: string;
@@ -48,18 +47,44 @@ export type ReviewInput = {
 
 export type ReviewFinding = {
   title: string;
-  severity: "info" | "low" | "medium" | "high";
+  severity: "info" | "low" | "medium" | "high" | "critical";
+  confidence?: "high" | "medium" | "low";
+  classification?:
+    | "confirmed issue"
+    | "potential issue"
+    | "needs verification"
+    | "recommendation";
   type: string;
   file: string | null;
   line: number | null;
+  evidence?: string;
   description: string;
+  failurePath?: string;
+  actualImpact?: string;
+  whyThisMatters?: string;
   suggestedFix: string;
+  falsePositiveCheck?: ReviewFalsePositiveCheck | string;
+  selfContradictionCheck?: ReviewSelfContradictionCheck | string;
+};
+
+export type ReviewFalsePositiveCheck = {
+  existingHandlingFound: "yes" | "no";
+  existingHandling: string;
+  remainingIssue: string;
+};
+
+export type ReviewSelfContradictionCheck = {
+  titleMatchesEvidence: "yes" | "no";
+  failurePathSupportedByEvidence: "yes" | "no";
+  suggestedFixMatchesIssue: "yes" | "no";
 };
 
 export type ReviewResult = {
   summary: string;
-  riskLevel: "low" | "medium" | "high";
+  riskLevel: "low" | "low-medium" | "medium" | "high";
   findings: ReviewFinding[];
+  needsVerification?: string[];
+  likelyFalsePositives?: string[];
   testCases: string[];
   prComment: string;
 };
@@ -82,6 +107,21 @@ export type OllamaModel = {
 export type OllamaSettings = {
   baseUrl: string;
   model: string;
+};
+
+export type OllamaModelPreset = {
+  module: AiModule;
+  label: string;
+  recommendedModel: string;
+  fallbackModel: string;
+  description: string;
+};
+
+export type OllamaModuleModels = Record<AiModule, string>;
+
+export type OllamaLocalSettings = {
+  baseUrl: string;
+  moduleModels: OllamaModuleModels;
 };
 
 export type BugSeverity = "low" | "medium" | "high" | "critical";
