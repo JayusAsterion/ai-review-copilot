@@ -86,7 +86,7 @@ export default async function DashboardPage() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   asChild
-                  className="rounded-xl bg-cyan-300 text-slate-950 hover:bg-cyan-200"
+                  className="rounded-xl bg-brand-gradient font-semibold text-primary-foreground hover:brightness-105"
                 >
                   <Link href="/review">
                     Start Code Review
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
                 className={[
                   "group rounded-2xl border p-4 transition duration-150 active:scale-[0.99]",
                   card.primary
-                    ? "border-cyan-300/25 bg-cyan-300/10"
+                    ? "border-valra-green/25 bg-valra-green/10"
                     : "border-white/10 bg-white/[0.04] hover:bg-white/[0.06]",
                 ].join(" ")}
               >
@@ -157,7 +157,7 @@ export default async function DashboardPage() {
                     className={[
                       "flex size-10 items-center justify-center rounded-xl ring-1",
                       card.primary
-                        ? "bg-cyan-300/15 text-cyan-100 ring-cyan-300/25"
+                        ? "bg-valra-green/15 text-valra-green ring-valra-green/25"
                         : "bg-white/[0.04] text-slate-200 ring-white/10",
                     ].join(" ")}
                   >
@@ -201,7 +201,7 @@ export default async function DashboardPage() {
                 key={item.title}
                 className="rounded-2xl border border-white/10 bg-white/[0.035] p-4"
               >
-                <Icon className="size-4 text-cyan-200" />
+                <Icon className="size-4 text-valra-cyan" />
                 <h3 className="mt-3 text-sm font-semibold text-white">
                   {item.title}
                 </h3>

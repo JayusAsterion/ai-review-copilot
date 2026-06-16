@@ -7,7 +7,6 @@ import {
   ListChecks,
   MessageSquareText,
 } from "lucide-react";
-import { motion } from "motion/react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -108,12 +107,7 @@ export function BugReportResultPanel({ result }: BugReportResultPanelProps) {
 
   if (!result) {
     return (
-      <motion.section
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.22, delay: 0.06, ease: [0.23, 1, 0.32, 1] }}
-        className="flex min-h-[420px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-10 text-center"
-      >
+      <section className="valra-enter flex min-h-[420px] items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] px-6 py-10 text-center">
         <div className="max-w-md">
           <div className="mx-auto mb-5 flex size-14 items-center justify-center rounded-2xl bg-amber-300/10 text-amber-200 ring-1 ring-amber-300/20">
             <FileWarning className="size-7" />
@@ -139,17 +133,12 @@ export function BugReportResultPanel({ result }: BugReportResultPanelProps) {
             ))}
           </div>
         </div>
-      </motion.section>
+      </section>
     );
   }
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-      className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground"
-    >
+    <section className="valra-enter overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground">
       <div className="space-y-4 border-b border-white/10 bg-black/15 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -310,6 +299,6 @@ export function BugReportResultPanel({ result }: BugReportResultPanelProps) {
           </div>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

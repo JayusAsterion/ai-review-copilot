@@ -1,0 +1,21 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="112" fill="#050B12"/>
+  <rect x="1" y="1" width="510" height="510" rx="111" stroke="#213149" stroke-width="2"/>
+  <path d="M0 0H512V512H0V0Z" fill="url(#icon-bg)"/>
+  <path d="M131 139L225 327L333 139" stroke="url(#valra-gradient)" stroke-width="50" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M328 430L448 132" stroke="url(#valra-gradient)" stroke-width="54" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="131" cy="139" r="36" fill="#27F5A5"/>
+  <circle cx="189" cy="257" r="30" fill="#27F5A5"/>
+  <circle cx="250" cy="194" r="34" fill="#27F5A5"/>
+  <defs>
+    <radialGradient id="icon-bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(153 86) rotate(43.8) scale(421 445)">
+      <stop stop-color="#101B2D"/>
+      <stop offset="0.55" stop-color="#08111F"/>
+      <stop offset="1" stop-color="#050B12"/>
+    </radialGradient>
+    <linearGradient id="valra-gradient" x1="109" y1="119" x2="451" y2="427" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#27F5A5"/>
+      <stop offset="1" stop-color="#2BD5FF"/>
+    </linearGradient>
+  </defs>
+</svg>

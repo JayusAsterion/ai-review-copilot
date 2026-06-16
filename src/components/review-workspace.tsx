@@ -1,21 +1,20 @@
 "use client";
 
 import {
-  Bot,
   Cloud,
+  Server,
   Sparkles,
 } from "lucide-react";
-import { motion } from "motion/react";
+import dynamic from "next/dynamic";
 import type { ComponentType } from "react";
 import { useState } from "react";
 
 import { OllamaModelStatus } from "@/components/provider-settings/ollama-model-status";
 import { BugReportForm } from "@/components/review-input/bug-report-form";
 import { CodeReviewForm } from "@/components/review-input/code-review-form";
-import { BugReportResultPanel } from "@/components/review-result/bug-report-result-panel";
-import { ReviewResultPanel } from "@/components/review-result/review-result-panel";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useOllamaModuleSettings } from "@/lib/ai/ollama-local-settings";
 import type {
   BugReportResult,
@@ -35,7 +34,7 @@ const providerOptions: Array<{
     value: "ollama",
     label: "Local Ollama",
     description: "Run AI workflows from this browser against local Ollama.",
-    icon: Bot,
+    icon: Server,
   },
   {
     value: "static",
@@ -51,6 +50,45 @@ const providerOptions: Array<{
     disabled: true,
   },
 ];
+
+function ResultPanelPlaceholder() {
+  return (
+    <section className="rounded-2xl border border-border bg-panel p-5 text-card-foreground">
+      <div className="flex items-center gap-3">
+        <Skeleton className="size-10 rounded-xl bg-panel-raised" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-36 bg-panel-raised" />
+          <Skeleton className="h-3 w-64 bg-panel-raised" />
+        </div>
+      </div>
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        <Skeleton className="h-20 rounded-xl bg-panel-raised" />
+        <Skeleton className="h-20 rounded-xl bg-panel-raised" />
+        <Skeleton className="h-20 rounded-xl bg-panel-raised" />
+      </div>
+    </section>
+  );
+}
+
+const ReviewResultPanel = dynamic(
+  () =>
+    import("@/components/review-result/review-result-panel").then(
+      (mod) => mod.ReviewResultPanel
+    ),
+  {
+    loading: () => <ResultPanelPlaceholder />,
+  }
+);
+
+const BugReportResultPanel = dynamic(
+  () =>
+    import("@/components/review-result/bug-report-result-panel").then(
+      (mod) => mod.BugReportResultPanel
+    ),
+  {
+    loading: () => <ResultPanelPlaceholder />,
+  }
+);
 
 type ReviewWorkspaceProps = {
   initialMode?: Extract<ReviewMode, "code-review" | "bug-report">;
@@ -69,16 +107,11 @@ export function ReviewWorkspace({
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, ease: [0.23, 1, 0.32, 1] }}
-      className="flex flex-1 flex-col gap-6 pb-10"
-    >
-      <section className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground">
+    <div className="valra-enter flex flex-1 flex-col gap-6 pb-10">
+      <section className="overflow-hidden rounded-2xl border border-border bg-panel text-card-foreground">
         <div className="grid gap-5 px-4 py-5 sm:px-5">
           <div className="space-y-3">
-            <Label className="text-slate-200">AI provider</Label>
+            <Label className="text-foreground">AI provider</Label>
             <div className="grid gap-2 sm:grid-cols-3">
               {providerOptions.map((option) => {
                 const Icon = option.icon;
@@ -92,15 +125,15 @@ export function ReviewWorkspace({
                     onClick={() => setProvider(option.value)}
                     className={[
                       "rounded-xl border p-3 text-left transition-[border-color,background-color,transform]",
-                      "hover:border-cyan-300/25 hover:bg-white/[0.06] active:scale-[0.99]",
+                      "hover:border-valra-cyan/30 hover:bg-panel-raised active:scale-[0.99]",
                       "disabled:cursor-not-allowed disabled:opacity-60",
                       isSelected
-                        ? "border-cyan-300/35 bg-cyan-300/10"
-                        : "border-white/10 bg-black/20",
+                        ? "border-valra-cyan/35 bg-valra-cyan/10"
+                        : "border-border bg-panel-muted",
                     ].join(" ")}
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <span className="flex items-center gap-2 text-sm font-medium text-slate-100">
+                      <span className="flex items-center gap-2 text-sm font-medium text-foreground">
                         <Icon className="size-4" />
                         {option.label}
                       </span>
@@ -110,7 +143,7 @@ export function ReviewWorkspace({
                         </Badge>
                       ) : null}
                     </div>
-                    <p className="mt-2 text-xs leading-5 text-slate-400">
+                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
                       {option.description}
                     </p>
                   </button>
@@ -153,6 +186,6 @@ export function ReviewWorkspace({
           />
         </>
       )}
-    </motion.div>
+    </div>
   );
 }

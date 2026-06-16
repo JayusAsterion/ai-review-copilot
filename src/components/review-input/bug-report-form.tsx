@@ -1,7 +1,6 @@
 "use client";
 
 import { ClipboardList, Loader2, RotateCcw, Sparkles } from "lucide-react";
-import { motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -145,12 +144,7 @@ export function BugReportForm({
   };
 
   return (
-    <motion.section
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.22, delay: 0.03, ease: [0.23, 1, 0.32, 1] }}
-      className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground"
-    >
+    <section className="valra-enter overflow-hidden rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground">
       <div className="border-b border-white/10 bg-black/15 px-4 py-4 sm:px-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
@@ -486,6 +480,6 @@ export function BugReportForm({
           </Button>
         </div>
       </div>
-    </motion.section>
+    </section>
   );
 }

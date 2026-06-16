@@ -4,6 +4,30 @@ import { NextResponse } from "next/server";
 import { authOptions } from "@/auth";
 import { prisma } from "@/lib/prisma";
 
+type AzureConnectionRow = {
+  id: string;
+  provider: string;
+  organizationName: string | null;
+  organizationUrl: string | null;
+  tenantId: string | null;
+  status: string;
+  connectedAt: Date | null;
+  lastValidatedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+type AzureSelectionRow = {
+  id: string;
+  organization: string | null;
+  projectId: string | null;
+  projectName: string | null;
+  repositoryId: string | null;
+  repositoryName: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export async function GET() {
   const session = await getServerSession(authOptions);
   const userId = session?.user?.id;
@@ -86,14 +110,14 @@ export async function GET() {
         }
       : null,
     azureDevOps: {
-      connections: azureConnections.map((connection) => ({
+      connections: azureConnections.map((connection: AzureConnectionRow) => ({
         ...connection,
         connectedAt: connection.connectedAt?.toISOString() ?? null,
         lastValidatedAt: connection.lastValidatedAt?.toISOString() ?? null,
         createdAt: connection.createdAt.toISOString(),
         updatedAt: connection.updatedAt.toISOString(),
       })),
-      selections: azureSelections.map((selection) => ({
+      selections: azureSelections.map((selection: AzureSelectionRow) => ({
         ...selection,
         createdAt: selection.createdAt.toISOString(),
         updatedAt: selection.updatedAt.toISOString(),

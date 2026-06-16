@@ -6,15 +6,15 @@ import type { GuideBadge, UserGuideSection } from "@/data/user-guide";
 import { cn } from "@/lib/utils";
 
 const badgeStyles: Record<GuideBadge, string> = {
-  Implemented: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
-  Planned: "border-amber-300/20 bg-amber-400/10 text-amber-100",
-  "Local-first": "border-cyan-300/20 bg-cyan-400/10 text-cyan-100",
-  Docker: "border-sky-300/20 bg-sky-400/10 text-sky-100",
+  Implemented: "border-valra-green/20 bg-valra-green/10 text-valra-green",
+  Planned: "border-warning/20 bg-warning/10 text-warning",
+  "Local-first": "border-valra-cyan/20 bg-valra-cyan/10 text-valra-cyan",
+  Docker: "border-valra-cyan/20 bg-valra-cyan/10 text-valra-cyan",
   "GPU Optional": "border-fuchsia-300/20 bg-fuchsia-400/10 text-fuchsia-100",
-  Required: "border-rose-300/20 bg-rose-400/10 text-rose-100",
-  Recommended: "border-emerald-300/20 bg-emerald-400/10 text-emerald-100",
-  Optional: "border-slate-300/20 bg-slate-400/10 text-slate-100",
-  "Coming soon": "border-amber-300/20 bg-amber-400/10 text-amber-100",
+  Required: "border-danger/20 bg-danger/10 text-danger",
+  Recommended: "border-valra-green/20 bg-valra-green/10 text-valra-green",
+  Optional: "border-border bg-muted text-muted-foreground",
+  "Coming soon": "border-warning/20 bg-warning/10 text-warning",
 };
 
 type GuideSectionProps = {
@@ -27,9 +27,9 @@ export function GuideSection({ section, nested = false }: GuideSectionProps) {
     <section
       id={section.id}
       className={cn(
-        "scroll-mt-6 rounded-2xl border border-white/10 bg-white/[0.04] text-card-foreground",
+        "scroll-mt-6 rounded-2xl border border-border bg-panel text-card-foreground",
         nested
-          ? "rounded-2xl bg-black/20 p-4 shadow-none sm:p-5"
+          ? "rounded-2xl bg-panel-muted p-4 shadow-none sm:p-5"
           : "p-5 sm:p-6"
       )}
     >
@@ -38,14 +38,14 @@ export function GuideSection({ section, nested = false }: GuideSectionProps) {
           <div className="min-w-0 space-y-2">
             <h2
               className={cn(
-                "font-semibold tracking-tight text-white",
+                "font-semibold tracking-tight text-foreground",
                 nested ? "text-lg" : "text-2xl"
               )}
             >
               {section.title}
             </h2>
             {section.description ? (
-              <p className="max-w-3xl text-sm leading-6 text-slate-300 sm:text-base">
+              <p className="max-w-3xl text-sm leading-6 text-muted-foreground sm:text-base">
                 {section.description}
               </p>
             ) : null}
@@ -65,11 +65,11 @@ export function GuideSection({ section, nested = false }: GuideSectionProps) {
         </div>
 
         {section.items?.length ? (
-          <ul className="grid gap-2 text-sm leading-6 text-slate-300">
+          <ul className="grid gap-2 text-sm leading-6 text-muted-foreground">
             {section.items.map((item) => (
               <li key={item} className="flex gap-2">
-                <CircleDot className="mt-1.5 size-3.5 shrink-0 text-cyan-200" />
-                <span className="[&_code]:font-mono [&_code]:text-cyan-100">
+                <CircleDot className="mt-1.5 size-3.5 shrink-0 text-valra-cyan" />
+                <span className="[&_code]:font-mono [&_code]:text-valra-cyan">
                   {formatInlineCode(item)}
                 </span>
               </li>

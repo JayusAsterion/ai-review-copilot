@@ -1,0 +1,13 @@
+<svg width="64" height="64" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M52 57L99 151L153 57" stroke="url(#valra-gradient)" stroke-width="25" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M150 202L213 53" stroke="url(#valra-gradient)" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="52" cy="57" r="18" fill="#27F5A5"/>
+  <circle cx="81" cy="116" r="15" fill="#27F5A5"/>
+  <circle cx="111" cy="84" r="17" fill="#27F5A5"/>
+  <defs>
+    <linearGradient id="valra-gradient" x1="41" y1="47" x2="217" y2="204" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#27F5A5"/>
+      <stop offset="1" stop-color="#2BD5FF"/>
+    </linearGradient>
+  </defs>
+</svg>

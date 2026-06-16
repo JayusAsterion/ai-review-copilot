@@ -2,7 +2,6 @@
 
 import {
   BookOpen,
-  Bot,
   Bug,
   CheckCircle2,
   ClipboardList,
@@ -16,6 +15,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserMenu } from "@/components/auth/user-menu";
 import { Badge } from "@/components/ui/badge";
@@ -52,19 +52,19 @@ export function AppShell({ title, description, children }: AppShellProps) {
     process.env.NEXT_PUBLIC_DEFAULT_OLLAMA_MODEL ?? "qwen3-coder:30b";
 
   return (
-    <main className="min-h-[100dvh] overflow-hidden bg-[#070a12] text-white">
+    <main className="min-h-[100dvh] overflow-hidden bg-background text-foreground">
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(34,211,238,0.12),transparent_28%),radial-gradient(circle_at_84%_12%,rgba(16,185,129,0.1),transparent_26%),linear-gradient(180deg,rgba(15,23,42,0),#070a12_72%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.028)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.028)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_78%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,var(--ambient-cyan),transparent_28%),radial-gradient(circle_at_84%_12%,var(--ambient-green),transparent_26%),linear-gradient(180deg,transparent,var(--background)_72%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(color-mix(in_srgb,var(--foreground)_4%,transparent)_1px,transparent_1px),linear-gradient(90deg,color-mix(in_srgb,var(--foreground)_4%,transparent)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_78%)]" />
       </div>
 
       <div className="flex min-h-[100dvh]">
-        <aside className="hidden w-72 shrink-0 border-r border-white/10 bg-[#080b13]/92 px-4 py-4 lg:block">
+        <aside className="hidden w-72 shrink-0 border-r border-border bg-background-secondary/95 px-4 py-4 lg:block">
           <SidebarContent pathname={pathname} />
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <header className="sticky top-0 z-30 border-b border-white/10 bg-[#070a12]/86 backdrop-blur-xl">
+          <header className="sticky top-0 z-30 border-b border-border bg-background/88 backdrop-blur-xl">
             <div className="flex min-h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
               <div className="flex min-w-0 items-center gap-3">
                 <Sheet>
@@ -73,7 +73,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                       type="button"
                       variant="outline"
                       size="icon-sm"
-                      className="border-white/10 bg-white/[0.04] text-white/80 hover:bg-white/[0.08] hover:text-white lg:hidden"
+                      className="border-border bg-surface/80 text-foreground/80 hover:bg-surface-elevated hover:text-foreground lg:hidden"
                       aria-label="Open navigation"
                     >
                       <Menu />
@@ -81,7 +81,7 @@ export function AppShell({ title, description, children }: AppShellProps) {
                   </SheetTrigger>
                   <SheetContent
                     side="left"
-                    className="w-80 border-white/10 bg-[#080b13] p-0 text-white"
+                    className="w-80 border-border bg-background-secondary p-0 text-foreground"
                   >
                     <SheetHeader className="sr-only">
                       <SheetTitle>Navigation</SheetTitle>
@@ -94,11 +94,11 @@ export function AppShell({ title, description, children }: AppShellProps) {
                 </Sheet>
 
                 <div className="min-w-0">
-                  <h1 className="truncate text-base font-semibold tracking-tight text-white sm:text-lg">
+                  <h1 className="truncate text-base font-semibold tracking-tight text-foreground sm:text-lg">
                     {title}
                   </h1>
                   {description ? (
-                    <p className="hidden max-w-2xl truncate text-xs text-slate-400 md:block">
+                    <p className="hidden max-w-2xl truncate text-xs text-muted-foreground md:block">
                       {description}
                     </p>
                   ) : null}
@@ -106,17 +106,17 @@ export function AppShell({ title, description, children }: AppShellProps) {
               </div>
 
               <div className="flex items-center gap-2">
-                <Badge className="hidden border-emerald-300/20 bg-emerald-400/10 text-emerald-100 sm:inline-flex">
+                <Badge className="hidden border-valra-green/25 bg-valra-green/10 text-valra-green sm:inline-flex">
                   <CheckCircle2 className="size-3" />
                   Local-first
                 </Badge>
-                <div className="hidden rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-slate-300 xl:block">
-                  <span className="text-slate-500">Model</span>{" "}
-                  <span className="font-mono text-slate-100">
+                <div className="hidden rounded-xl border border-border bg-surface/80 px-3 py-2 text-xs text-muted-foreground xl:block">
+                  <span className="text-subtle-foreground">Model</span>{" "}
+                  <span className="font-mono text-foreground">
                     {selectedModel}
                   </span>
                 </div>
-                <div className="hidden items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-slate-300 md:flex">
+                <div className="hidden items-center gap-2 rounded-xl border border-border bg-surface/80 px-3 py-2 text-xs text-muted-foreground md:flex">
                   <span className="size-2 rounded-full bg-amber-300" />
                   Ollama not tested
                 </div>
@@ -138,21 +138,20 @@ export function AppShell({ title, description, children }: AppShellProps) {
 function SidebarContent({ pathname }: { pathname: string }) {
   return (
     <div className="flex h-full min-h-[100dvh] flex-col p-4 lg:min-h-0 lg:p-0">
-      <Link href="/" className="group flex items-center gap-3 rounded-2xl px-2 py-2">
-        <div className="flex size-10 items-center justify-center rounded-2xl bg-cyan-300/10 text-cyan-100 ring-1 ring-cyan-300/20 transition-transform duration-150 group-active:scale-[0.98]">
-          <Bot className="size-5" />
-        </div>
+      <Link
+        href="/"
+        prefetch
+        className="group flex items-center gap-3 rounded-2xl px-2 py-2"
+      >
+        <Logo size="md" />
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">
-            Valra
-          </p>
-          <p className="truncate text-xs text-slate-500">
+          <p className="truncate text-xs text-subtle-foreground">
             Safer pull requests
           </p>
         </div>
       </Link>
 
-      <Separator className="my-4 bg-white/10" />
+      <Separator className="my-4 bg-border" />
 
       <nav aria-label="Primary navigation" className="space-y-1">
         {navItems.map((item) => {
@@ -166,11 +165,13 @@ function SidebarContent({ pathname }: { pathname: string }) {
             <Link
               key={item.href}
               href={item.href}
+              prefetch
+              aria-current={isActive ? "page" : undefined}
               className={cn(
                 "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition duration-150 active:scale-[0.99]",
                 isActive
-                  ? "bg-white/[0.08] text-white ring-1 ring-white/10"
-                  : "text-slate-400 hover:bg-white/[0.05] hover:text-slate-100"
+                  ? "bg-surface-elevated text-foreground ring-1 ring-valra-green/15"
+                  : "text-muted-foreground hover:bg-surface hover:text-foreground"
               )}
             >
               <Icon className="size-4" />
@@ -180,12 +181,12 @@ function SidebarContent({ pathname }: { pathname: string }) {
         })}
       </nav>
 
-      <div className="mt-auto rounded-2xl border border-white/10 bg-white/[0.035] p-4">
-        <div className="flex items-center gap-2 text-sm font-medium text-white">
-          <ShieldCheck className="size-4 text-emerald-200" />
+      <div className="mt-auto rounded-2xl border border-border bg-surface/75 p-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <ShieldCheck className="size-4 text-valra-green" />
           Browser to Ollama
         </div>
-        <p className="mt-2 text-xs leading-5 text-slate-400">
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">
           Local AI requests stay between this browser and your machine when
           Ollama is selected.
         </p>

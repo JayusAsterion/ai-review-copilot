@@ -1,5 +1,4 @@
 import {
-  Bot,
   Bug,
   CheckCircle2,
   ClipboardList,
@@ -105,8 +104,8 @@ export function GuideLayout({ sections }: GuideLayoutProps) {
               {badge}
             </Badge>
           ))}
-          <Badge className="border-emerald-300/20 bg-emerald-400/10 text-emerald-100">
-            <Bot className="size-3" />
+          <Badge className="border-valra-green/20 bg-valra-green/10 text-valra-green">
+            <Server className="size-3" />
             Browser to Ollama
           </Badge>
         </div>

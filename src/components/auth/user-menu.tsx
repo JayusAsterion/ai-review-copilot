@@ -42,14 +42,14 @@ export function UserMenu() {
         <Button
           type="button"
           variant="outline"
-          className="h-9 rounded-xl border-white/10 bg-white/[0.04] px-2 text-slate-100 hover:bg-white/[0.08]"
+          className="h-9 rounded-xl border-border bg-surface/80 px-2 text-foreground hover:bg-surface-elevated"
           aria-label="Open user menu"
         >
-          <Avatar size="sm" className="bg-cyan-300/10">
+          <Avatar size="sm" className="bg-valra-cyan/10">
             {user?.image ? (
               <AvatarImage src={user.image} alt={displayName} />
             ) : null}
-            <AvatarFallback className="bg-cyan-300/10 text-[0.65rem] font-semibold text-cyan-100">
+            <AvatarFallback className="bg-valra-cyan/10 text-[0.65rem] font-semibold text-valra-cyan">
               {initialsFromName(displayName)}
             </AvatarFallback>
           </Avatar>
@@ -60,40 +60,40 @@ export function UserMenu() {
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-64 border-white/10 bg-[#0b0f19] text-slate-100"
+        className="w-64 border-border bg-popover text-popover-foreground"
       >
         <DropdownMenuLabel>
           <div className="flex min-w-0 items-center gap-2">
-            <Avatar size="sm" className="bg-cyan-300/10">
+            <Avatar size="sm" className="bg-valra-cyan/10">
               {user?.image ? (
                 <AvatarImage src={user.image} alt={displayName} />
               ) : null}
-              <AvatarFallback className="bg-cyan-300/10 text-[0.65rem] font-semibold text-cyan-100">
+              <AvatarFallback className="bg-valra-cyan/10 text-[0.65rem] font-semibold text-valra-cyan">
                 {initialsFromName(displayName)}
               </AvatarFallback>
             </Avatar>
             <div className="min-w-0">
-              <p className="truncate text-sm text-white">{displayName}</p>
+              <p className="truncate text-sm text-foreground">{displayName}</p>
               {user?.email ? (
-                <p className="truncate text-xs text-slate-500">{user.email}</p>
+                <p className="truncate text-xs text-muted-foreground">{user.email}</p>
               ) : null}
             </div>
           </div>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator className="bg-white/10" />
+        <DropdownMenuSeparator className="bg-border" />
         <DropdownMenuItem
           onClick={() => void signOut({ callbackUrl: "/" })}
-          className="cursor-pointer text-slate-200 focus:bg-white/[0.08] focus:text-white"
+          className="cursor-pointer text-foreground focus:bg-accent focus:text-accent-foreground"
         >
           <LogOut className="size-4" />
           Sign out
         </DropdownMenuItem>
         {!user?.email ? (
           <>
-            <DropdownMenuSeparator className="bg-white/10" />
+            <DropdownMenuSeparator className="bg-border" />
             <DropdownMenuItem
               disabled
-              className="text-slate-500 focus:bg-transparent"
+              className="text-muted-foreground focus:bg-transparent"
             >
               <UserRound className="size-4" />
               Microsoft account
